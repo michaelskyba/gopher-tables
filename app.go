@@ -61,6 +61,10 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+	// Static file serving
+	server := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", server))
+
 	http.HandleFunc("/", home_handler)
 	http.HandleFunc("/login/", login_handler)
 	http.HandleFunc("/register/", register_handler)
