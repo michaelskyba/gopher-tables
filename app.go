@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"log"
 	"net/http"
 	"html/template"
@@ -10,8 +12,17 @@ type template_values struct {
 	Url string
 }
 
+func handle(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
 func render_template(filename string, writer http.ResponseWriter, values template_values) {
-	page, _ := template.ParseFiles(filename)
+	page, err := template.ParseFiles(filename)
+	handle(err)
+
 	page.Execute(writer, values)
 }
 
