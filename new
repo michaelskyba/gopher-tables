@@ -2,18 +2,18 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"html/template"
 	"log"
 	"net/http"
-	"html/template"
+	"os"
 )
 
-var templates = template.Must(template.ParseFiles(
+var templates = template.Must(template.ParseFiles([]string{
 	"html/index.html",
 	"html/404.html",
 	"html/login.html",
 	"html/register.html",
-	"html/lobby.html"))
+	"html/lobby.html"}...))
 
 type template_values struct {
 	Url string
@@ -27,8 +27,10 @@ func handle(err error) {
 }
 
 func render_template(filename string, writer http.ResponseWriter, values template_values) {
-	err := templates.ExecuteTemplate(writer, filename, values)
+	page, err := template.ParseFiles(filename)
 	handle(err)
+
+	page.Execute(writer, values)
 }
 
 // Home page
@@ -36,28 +38,28 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 
 	// Normal
 	if request.URL.Path == "/" {
-		render_template("index.html", writer, template_values{})
+		render_template("html/index.html", writer, template_values{})
 
-	// 404
+		// 404
 	} else {
 		values := template_values{request.URL.Path}
-		render_template("404.html", writer, values)
+		render_template("html/404.html", writer, values)
 	}
 }
 
 // Log in page
 func login_handler(writer http.ResponseWriter, request *http.Request) {
-	render_template("login.html", writer, template_values{})
+	render_template("html/login.html", writer, template_values{})
 }
 
 // Register page
 func register_handler(writer http.ResponseWriter, request *http.Request) {
-	render_template("register.html", writer, template_values{})
+	render_template("html/register.html", writer, template_values{})
 }
 
 // Lobby
 func lobby_handler(writer http.ResponseWriter, request *http.Request) {
-	render_template("lobby.html", writer, template_values{})
+	render_template("html/lobby.html", writer, template_values{})
 }
 
 func main() {
