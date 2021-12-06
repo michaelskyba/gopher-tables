@@ -10,37 +10,38 @@ type template_values struct {
 	Url string
 }
 
+func render_template(filename string, writer http.ResponseWriter, values template_values) {
+	page, _ := template.ParseFiles(filename)
+	page.Execute(writer, values)
+}
+
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
 
 	// Normal
 	if request.URL.Path == "/" {
-		page, _ := template.ParseFiles("html/index.html")
-		page.Execute(writer, template_values{})
+		render_template("html/index.html", writer, template_values{})
 
 	// 404
 	} else {
-		page, _ := template.ParseFiles("html/404.html")
-		page.Execute(writer, template_values{request.URL.Path})
+		values := template_values{request.URL.Path}
+		render_template("html/404.html", writer, values)
 	}
 }
 
 // Log in page
 func login_handler(writer http.ResponseWriter, request *http.Request) {
-	page, _ := template.ParseFiles("html/login.html")
-	page.Execute(writer, template_values{})
+	render_template("html/login.html", writer, template_values{})
 }
 
 // Register page
 func register_handler(writer http.ResponseWriter, request *http.Request) {
-	page, _ := template.ParseFiles("html/register.html")
-	page.Execute(writer, template_values{})
+	render_template("html/register.html", writer, template_values{})
 }
 
 // Lobby
 func lobby_handler(writer http.ResponseWriter, request *http.Request) {
-	page, _ := template.ParseFiles("html/lobby.html")
-	page.Execute(writer, template_values{})
+	render_template("html/lobby.html", writer, template_values{})
 }
 
 func main() {
