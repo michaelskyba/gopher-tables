@@ -1,34 +1,40 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	// "html/template"
+	"html/template"
 )
+
+type template_values struct {
+	Url string
+}
 
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
-	var HTML string
 
+	// Normal
 	if request.URL.Path == "/" {
-		HTML = "<h1>Welcome to Gopher Tables!</h1><a href='/login'>Log in</a>"
-	} else {
-		HTML = fmt.Sprintf("<h1>404 - Page not found: %s</h1>", request.URL.Path)
-	}
+		page, _ := template.ParseFiles("html/index.html")
+		page.Execute(writer, template_values{})
 
-	fmt.Fprintf(writer, HTML)
-	// fmt.Println(request)
+	// 404
+	} else {
+		page, _ := template.ParseFiles("html/404.html")
+		page.Execute(writer, template_values{request.URL.Path})
+	}
 }
 
 // Log in page
 func login_handler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(writer, request.URL.Path)
+	page, _ := template.ParseFiles("html/login.html")
+	page.Execute(writer, template_values{})
 }
 
 // Register page
 func register_handler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(writer, request.URL.Path)
+	page, _ := template.ParseFiles("html/register.html")
+	page.Execute(writer, template_values{})
 }
 
 func main() {
