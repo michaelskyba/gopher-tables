@@ -135,7 +135,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 				redirect(writer, request, "/")
 		} else {
 				set_cookie(writer, "message", "Error: Invalid credentials")
-				redirect(writer, request, "/login_get/")
+				redirect(writer, request, "/login/")
 		}
 	}
 }
@@ -156,8 +156,10 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Register URL pointing for submitting POST request form
 func register_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+
+	// Check if username is taken
 	set_cookie(writer, "message", "Request received")
-	redirect(writer, request, "/register_get/")
+	redirect(writer, request, "/register/")
 }
 
 // Lobby
@@ -207,11 +209,11 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", server))
 
 	http.HandleFunc("/", home_handler)
-	http.HandleFunc("/login_get/", login_get_handler)
+	http.HandleFunc("/login/", login_get_handler)
 	http.HandleFunc("/login_post/", func (writer http.ResponseWriter, request *http.Request) {
 		            login_post_handler(writer, request, db)
 	})
-	http.HandleFunc("/register_get/", register_get_handler)
+	http.HandleFunc("/register/", register_get_handler)
 	http.HandleFunc("/register_post/", func (writer http.ResponseWriter, request *http.Request) {
 		            register_post_handler(writer, request, db)
 	})
