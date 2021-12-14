@@ -20,6 +20,7 @@ var templates = template.Must(template.ParseFiles(
 
 type template_values struct {
 	Url string
+	LoggedIn bool
 }
 
 type account struct {
@@ -64,13 +65,18 @@ func render_template(filename string, writer http.ResponseWriter, values templat
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
 
+	signed_in := true
+	if get_cookie(request, "username") == "" {
+		signed_in = false
+	}
+
 	// Normal
 	if request.URL.Path == "/" {
-		render_template("index.html", writer, template_values{})
+		render_template("index.html", writer, template_values{"", signed_in})
 
 	// 404
 	} else {
-		values := template_values{request.URL.Path}
+		values := template_values{request.URL.Path, false}
 		render_template("404.html", writer, values)
 	}
 }
