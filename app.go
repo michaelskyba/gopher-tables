@@ -43,6 +43,19 @@ func set_cookie(writer http.ResponseWriter, name, value string) {
 	})
 }
 
+// Returns empty string if not found
+// Don't use if you need multiple cookies, because it's O(N)
+func get_cookie(request *http.Request, name string) string {
+
+	for _, cookie := range request.Cookies() {
+		if cookie.Name == name {
+			return cookie.Value
+		}
+	}
+
+	return ""
+}
+
 func render_template(filename string, writer http.ResponseWriter, values template_values) {
 	err := templates.ExecuteTemplate(writer, filename, values)
 	handle(err)
