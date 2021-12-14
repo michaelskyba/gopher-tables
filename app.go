@@ -22,6 +22,12 @@ type template_values struct {
 	Url string
 }
 
+type account struct {
+    ID int
+    username string
+    password string
+}
+
 func handle(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -54,6 +60,17 @@ func login_handler(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
 		fmt.Println(request.FormValue("username"))
 		fmt.Println(request.FormValue("password"))
+
+	    rows, err := db.Query("SELECT * FROM accounts;")
+	    handle(err)
+	    defer rows.Close()
+
+	    for rows.Next() {
+		    var current account
+		    err = rows.Scan(&current.ID, &current.username, &current.password)
+		    handle(err)
+		    fmt.Println(current)
+	    }
 	}
 
 	render_template("login.html", writer, template_values{})
@@ -70,9 +87,7 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	// Database testing
-	var err error
-
+	// Database setup
 	config := mysql.Config{
         User:   "michael",
         Passwd: "password",
@@ -85,25 +100,9 @@ func main() {
     db, err := sql.Open("mysql", config.FormatDSN())
     handle(err)
 
+	// Check for connection
     err = db.Ping()
     handle(err)
-
-    rows, err := db.Query("SELECT * FROM accounts;")
-    handle(err)
-    defer rows.Close()
-
-    type account struct {
-	    ID int
-	    username string
-	    password string
-    }
-
-    for rows.Next() {
-	    var current account
-	    err = rows.Scan(&current.ID, &current.username, &current.password)
-	    handle(err)
-	    fmt.Println(current)
-    }
 
 	// Static file serving
 	server := http.FileServer(http.Dir("./static"))
