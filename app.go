@@ -77,6 +77,13 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Log in page
 func login_get_handler(writer http.ResponseWriter, request *http.Request) {
+
+	// Redirect to homepage if already signed in
+	username := get_cookie(request, "username")
+	if username != "" {
+		http.Redirect(writer, request, "/", http.StatusSeeOther)
+	}
+
 	render_template("login.html", writer, template_values{})
 }
 
@@ -105,6 +112,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 
 		if success {
 				fmt.Println("Successful login")
+				set_cookie(writer, "username", form_username)
 		} else {
 				fmt.Println("Invalid username or password")
 		}
@@ -115,6 +123,13 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 
 // Register page
 func register_handler(writer http.ResponseWriter, request *http.Request) {
+
+	// Redirect to homepage if already signed in
+	username := get_cookie(request, "username")
+	if username != "" {
+		http.Redirect(writer, request, "/", http.StatusSeeOther)
+	}
+
 	render_template("register.html", writer, template_values{})
 }
 
