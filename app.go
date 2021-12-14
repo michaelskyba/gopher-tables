@@ -23,9 +23,9 @@ type template_values struct {
 }
 
 type account struct {
-    ID int
-    username string
-    password string
+	ID int
+	username string
+	password string
 }
 
 func handle(err error) {
@@ -61,16 +61,16 @@ func login_handler(writer http.ResponseWriter, request *http.Request) {
 		fmt.Println(request.FormValue("username"))
 		fmt.Println(request.FormValue("password"))
 
-	    rows, err := db.Query("SELECT * FROM accounts;")
-	    handle(err)
-	    defer rows.Close()
+		rows, err := db.Query("SELECT * FROM accounts;")
+		handle(err)
+		defer rows.Close()
 
-	    for rows.Next() {
-		    var current account
-		    err = rows.Scan(&current.ID, &current.username, &current.password)
-		    handle(err)
-		    fmt.Println(current)
-	    }
+		for rows.Next() {
+			var current account
+			err = rows.Scan(&current.ID, &current.username, &current.password)
+			handle(err)
+			fmt.Println(current)
+		}
 	}
 
 	render_template("login.html", writer, template_values{})
@@ -89,20 +89,20 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 func main() {
 	// Database setup
 	config := mysql.Config{
-        User:   "michael",
-        Passwd: "password",
-        Net:    "tcp",
-        Addr:   "127.0.0.1:3306",
-        DBName: "db",
-        AllowNativePasswords: true,
-    }
+		User:   "michael",
+		Passwd: "password",
+		Net:    "tcp",
+		Addr:   "127.0.0.1:3306",
+		DBName: "db",
+		AllowNativePasswords: true,
+	}
 
-    db, err := sql.Open("mysql", config.FormatDSN())
-    handle(err)
+	db, err := sql.Open("mysql", config.FormatDSN())
+	handle(err)
 
 	// Check for connection
-    err = db.Ping()
-    handle(err)
+	err = db.Ping()
+	handle(err)
 
 	// Static file serving
 	server := http.FileServer(http.Dir("./static"))
