@@ -35,6 +35,13 @@ func handle(err error) {
 	}
 }
 
+func set_cookie(writer http.ResponseWriter, name, value string) {
+	http.SetCookie(writer, &http.Cookie{
+		              Name: name,
+		              Value: value,
+	})
+}
+
 func render_template(filename string, writer http.ResponseWriter, values template_values) {
 	err := templates.ExecuteTemplate(writer, filename, values)
 	handle(err)
@@ -66,10 +73,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 
 		// Cookie test
 		fmt.Println(request.Cookies())
-		http.SetCookie(writer, &http.Cookie{
-			              Name: "name_test",
-			              Value: "value_test",
-		})
+		set_cookie(writer, "test1", "test1")
 
 		fmt.Println(request.FormValue("username"))
 		fmt.Println(request.FormValue("password"))
