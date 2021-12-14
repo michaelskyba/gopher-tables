@@ -57,6 +57,10 @@ func get_cookie(request *http.Request, name string) string {
 	return ""
 }
 
+func redirect(writer http.ResponseWriter, request *http.Request, path string) {
+	http.Redirect(writer, request, path, http.StatusSeeOther)
+}
+
 func render_template(filename string, writer http.ResponseWriter, values template_values) {
 	err := templates.ExecuteTemplate(writer, filename, values)
 	handle(err)
@@ -87,7 +91,7 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 	// Redirect to homepage if already signed in
 	username := get_cookie(request, "username")
 	if username != "" {
-		http.Redirect(writer, request, "/", http.StatusSeeOther)
+		redirect(writer, request, "/")
 	}
 
 	render_template("login.html", writer, template_values{})
@@ -123,7 +127,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 				fmt.Println("Invalid username or password")
 		}
 
-		http.Redirect(writer, request, "/", http.StatusSeeOther)
+		redirect(writer, request, "/")
 	}
 }
 
@@ -133,7 +137,7 @@ func register_handler(writer http.ResponseWriter, request *http.Request) {
 	// Redirect to homepage if already signed in
 	username := get_cookie(request, "username")
 	if username != "" {
-		http.Redirect(writer, request, "/", http.StatusSeeOther)
+		redirect(writer, request, "/")
 	}
 
 	render_template("register.html", writer, template_values{})
@@ -173,7 +177,6 @@ func main() {
 
 	http.HandleFunc("/", home_handler)
 	http.HandleFunc("/login_get/", login_get_handler)
-	// http.HandleFunc("/login_post/", login_post_handler)
 	http.HandleFunc("/login_post/", func (writer http.ResponseWriter, request *http.Request) {
 		            login_post_handler(writer, request, db)
 	})
