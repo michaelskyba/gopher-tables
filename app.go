@@ -8,6 +8,7 @@ import (
 	"html/template"
 
 	"github.com/go-sql-driver/mysql"
+	"database/sql"
 )
 
 var templates = template.Must(template.ParseFiles(
@@ -86,7 +87,7 @@ func main() {
         DBName: "accounts",
     }
 
-    db, err := sql.Open("mysql", cfg.FormatDSN())
+    db, err := sql.Open("mysql", config.FormatDSN())
     handle(err)
 
     err = db.Ping()
