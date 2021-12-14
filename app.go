@@ -68,11 +68,11 @@ func main() {
 	var err error
 
 	config := mysql.Config{
-        User:   "root",
-        Passwd: "",
+        User:   "michael",
+        Passwd: "password",
         Net:    "tcp",
         Addr:   "127.0.0.1:3306",
-        DBName: "accounts",
+        DBName: "db",
         AllowNativePasswords: true,
     }
 
