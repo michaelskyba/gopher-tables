@@ -73,6 +73,7 @@ func main() {
         Net:    "tcp",
         Addr:   "127.0.0.1:3306",
         DBName: "accounts",
+        AllowNativePasswords: true,
     }
 
     db, err := sql.Open("mysql", config.FormatDSN())
