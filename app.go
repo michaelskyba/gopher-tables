@@ -141,7 +141,12 @@ func register_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Lobby
 func lobby_handler(writer http.ResponseWriter, request *http.Request) {
-	render_template("lobby.html", writer, template_values{})
+	signed_in := true
+	if get_cookie(request, "username") == "" {
+		signed_in = false
+	}
+
+	render_template("lobby.html", writer, template_values{"", signed_in})
 }
 
 func main() {

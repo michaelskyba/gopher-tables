@@ -8,10 +8,18 @@
 	</head>
 	<body>
 		<h1>Lobby</h1>
+
 		<a href="/" id="left">Home</a>
-		<a href="/login_get/">Log in</a>
-		<a href="/register/">Register</a>
-		<a href="/lobby/">Play</a>
+		{{if .LoggedIn}}
+			<a href="/profile/">My Profile</a>
+			<a href="/lobby/">Play</a>
+			<a href="/logout/">Log out</a>
+		{{else}}
+			<a href="/login_get/">Log in</a>
+			<a href="/register/">Register</a>
+			<a href="/lobby/">Play</a>
+		{{end}}
+
 
 		<p>No games found.</p>
 		<input type="button" value="Refresh">
