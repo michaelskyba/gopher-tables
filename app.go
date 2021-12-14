@@ -19,7 +19,7 @@ var templates = template.Must(template.ParseFiles(
 	"html/lobby.html"))
 
 type template_values struct {
-	Url string
+	Message string
 	LoggedIn bool
 }
 
@@ -88,13 +88,25 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 // Log in page
 func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 
-	// Redirect to homepage if already signed in
-	username := get_cookie(request, "username")
+	var username string
+	var message string
+
+	for _, cookie := range request.Cookies() {
+		if cookie.Name == "username" {
+			username = cookie.Value
+		}
+		if cookie.Name == "message" {
+			message = cookie.Value
+		}
+	}
+
+	// Already logged in
 	if username != "" {
 		redirect(writer, request, "/")
 	}
 
-	render_template("login.html", writer, template_values{})
+	set_cookie(writer, "message", "")
+	render_template("login.html", writer, template_values{message, false})
 }
 
 // Log in URL point for submitting the log in form
@@ -121,13 +133,13 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 		}
 
 		if success {
-				fmt.Println("Successful login")
 				set_cookie(writer, "username", form_username)
+				set_cookie(writer, "message", "Successfully logged in.")
+				redirect(writer, request, "/")
 		} else {
-				fmt.Println("Invalid username or password")
+				set_cookie(writer, "message", "Error: Invalid credentials")
+				redirect(writer, request, "/login_get/")
 		}
-
-		redirect(writer, request, "/")
 	}
 }
 
