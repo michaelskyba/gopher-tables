@@ -55,7 +55,12 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 }
 
 // Log in page
-func login_handler(writer http.ResponseWriter, request *http.Request) {
+func login_get_handler(writer http.ResponseWriter, request *http.Request) {
+	render_template("login.html", writer, template_values{})
+}
+
+// Log in URL point for submitting the log in form
+func login_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	if request.Method == http.MethodPost {
 		fmt.Println(request.FormValue("username"))
@@ -71,9 +76,9 @@ func login_handler(writer http.ResponseWriter, request *http.Request) {
 			handle(err)
 			fmt.Println(current)
 		}
-	}
 
-	render_template("login.html", writer, template_values{})
+		http.Redirect(writer, request, "/", http.StatusSeeOther)
+	}
 }
 
 // Register page
@@ -109,7 +114,11 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", server))
 
 	http.HandleFunc("/", home_handler)
-	http.HandleFunc("/login/", login_handler)
+	http.HandleFunc("/login_get/", login_get_handler)
+	// http.HandleFunc("/login_post/", login_post_handler)
+	http.HandleFunc("/login_post/", func (writer http.ResponseWriter, request *http.Request) {
+		            login_post_handler(writer, request, db)
+	})
 	http.HandleFunc("/register/", register_handler)
 	http.HandleFunc("/lobby/", lobby_handler)
 
