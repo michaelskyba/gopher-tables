@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"html/template"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 var templates = template.Must(template.ParseFiles(
@@ -71,4 +73,23 @@ func main() {
 	http.HandleFunc("/lobby/", lobby_handler)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
+
+	// Database testing
+
+	var err error
+
+	config := mysql.Config{
+        User:   "root",
+        Passwd: "",
+        Net:    "tcp",
+        Addr:   "127.0.0.1:3306",
+        DBName: "accounts",
+    }
+
+    db, err := sql.Open("mysql", cfg.FormatDSN())
+    handle(err)
+
+    err = db.Ping()
+    handle(err)
+    fmt.Println("Success")
 }
