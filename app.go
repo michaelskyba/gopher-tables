@@ -141,7 +141,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 }
 
 // Register page
-func register_handler(writer http.ResponseWriter, request *http.Request) {
+func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	username, message := get_template_values(request)
 
@@ -150,8 +150,14 @@ func register_handler(writer http.ResponseWriter, request *http.Request) {
 		redirect(writer, request, "/")
 	}
 
-	set_cookie(writer, message, "")
+	set_cookie(writer, "message", "")
 	render_template("register.html", writer, template_values{message, false})
+}
+
+// Register URL pointing for submitting POST request form
+func register_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	set_cookie(writer, "message", "Request received")
+	redirect(writer, request, "/register_get/")
 }
 
 // Lobby
@@ -205,7 +211,10 @@ func main() {
 	http.HandleFunc("/login_post/", func (writer http.ResponseWriter, request *http.Request) {
 		            login_post_handler(writer, request, db)
 	})
-	http.HandleFunc("/register/", register_handler)
+	http.HandleFunc("/register_get/", register_get_handler)
+	http.HandleFunc("/register_post/", func (writer http.ResponseWriter, request *http.Request) {
+		            register_post_handler(writer, request, db)
+	})
 	http.HandleFunc("/lobby/", lobby_handler)
 	http.HandleFunc("/logout/", logout_handler)
 
