@@ -9,7 +9,6 @@
 	<body>
 		<h1>Welcome to Gopher Tables</h1>
 
-
 		<a href="/" id="left">Home</a>
 		{{if .LoggedIn}}
 			<a href="/profile/">My Profile</a>
@@ -20,5 +19,10 @@
 			<a href="/register/">Register</a>
 			<a href="/lobby/">Play</a>
 		{{end}}
+
+		{{if .Message}}
+			<blockquote>{{.Message}}</blockquote>
+		{{end}}
+
 	</body>
 </html>

@@ -20,6 +20,9 @@
 			<a href="/lobby/">Play</a>
 		{{end}}
 
+		{{if .Message}}
+			<blockquote>{{.Message}}</blockquote>
+		{{end}}
 
 		<p>No games found.</p>
 		<input type="button" value="Refresh">
