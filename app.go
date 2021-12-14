@@ -71,12 +71,8 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 
 	if request.Method == http.MethodPost {
 
-		// Cookie test
-		fmt.Println(request.Cookies())
-		set_cookie(writer, "test1", "test1")
-
-		fmt.Println(request.FormValue("username"))
-		fmt.Println(request.FormValue("password"))
+		// fmt.Println(request.FormValue("username"))
+		// fmt.Println(request.FormValue("password"))
 
 		rows, err := db.Query("SELECT * FROM accounts;")
 		handle(err)
@@ -86,7 +82,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 			var current account
 			err = rows.Scan(&current.ID, &current.username, &current.password)
 			handle(err)
-			fmt.Println(current)
+			// fmt.Println(current)
 		}
 
 		http.Redirect(writer, request, "/", http.StatusSeeOther)
