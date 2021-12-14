@@ -72,18 +72,28 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 
 	if request.Method == http.MethodPost {
 
-		// fmt.Println(request.FormValue("username"))
-		// fmt.Println(request.FormValue("password"))
+		form_username := request.FormValue("username")
+		form_password := request.FormValue("password")
 
-		rows, err := db.Query("SELECT * FROM accounts;")
+		rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
 		handle(err)
 		defer rows.Close()
 
+		success := false
 		for rows.Next() {
 			var current account
 			err = rows.Scan(&current.ID, &current.username, &current.password)
 			handle(err)
-			// fmt.Println(current)
+
+			if current.password == form_password {
+				success = true
+			}
+		}
+
+		if success {
+				fmt.Println("Successful login")
+		} else {
+				fmt.Println("Invalid username or password")
 		}
 
 		http.Redirect(writer, request, "/", http.StatusSeeOther)
