@@ -50,6 +50,12 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Log in page
 func login_handler(writer http.ResponseWriter, request *http.Request) {
+
+	if request.Method == http.MethodPost {
+		fmt.Println(request.FormValue("username"))
+		fmt.Println(request.FormValue("password"))
+	}
+
 	render_template("login.html", writer, template_values{})
 }
 
