@@ -153,6 +153,12 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 	render_template("lobby.html", writer, template_values{"", signed_in})
 }
 
+// Log out
+func logout_handler(writer http.ResponseWriter, request *http.Request) {
+	set_cookie(writer, "username", "")
+	redirect(writer, request, "/")
+}
+
 func main() {
 	// Database setup
 	config := mysql.Config{
@@ -182,6 +188,7 @@ func main() {
 	})
 	http.HandleFunc("/register/", register_handler)
 	http.HandleFunc("/lobby/", lobby_handler)
+	http.HandleFunc("/logout/", logout_handler)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
