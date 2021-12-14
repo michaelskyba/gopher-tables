@@ -81,7 +81,23 @@ func main() {
 
     err = db.Ping()
     handle(err)
-    fmt.Println("Success")
+
+    rows, err := db.Query("SELECT * FROM accounts;")
+    handle(err)
+    defer rows.Close()
+
+    type account struct {
+	    ID int
+	    username string
+	    password string
+    }
+
+    for rows.Next() {
+	    var current account
+	    err = rows.Scan(&current.ID, &current.username, &current.password)
+	    handle(err)
+	    fmt.Println(current)
+    }
 
 	// Static file serving
 	server := http.FileServer(http.Dir("./static"))
