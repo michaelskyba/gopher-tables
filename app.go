@@ -64,19 +64,7 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	// Static file serving
-	server := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", server))
-
-	http.HandleFunc("/", home_handler)
-	http.HandleFunc("/login/", login_handler)
-	http.HandleFunc("/register/", register_handler)
-	http.HandleFunc("/lobby/", lobby_handler)
-
-	log.Fatal(http.ListenAndServe(":8000", nil))
-
 	// Database testing
-
 	var err error
 
 	config := mysql.Config{
@@ -93,4 +81,15 @@ func main() {
     err = db.Ping()
     handle(err)
     fmt.Println("Success")
+
+	// Static file serving
+	server := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", server))
+
+	http.HandleFunc("/", home_handler)
+	http.HandleFunc("/login/", login_handler)
+	http.HandleFunc("/register/", register_handler)
+	http.HandleFunc("/lobby/", lobby_handler)
+
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
