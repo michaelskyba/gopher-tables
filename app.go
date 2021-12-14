@@ -131,7 +131,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 
 		if success {
 				set_cookie(writer, "username", form_username)
-				set_cookie(writer, "message", "Successfully logged in.")
+				set_cookie(writer, "message", "Successfully logged in")
 				redirect(writer, request, "/")
 		} else {
 				set_cookie(writer, "message", "Error: Invalid credentials")
@@ -168,7 +168,13 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Log out
 func logout_handler(writer http.ResponseWriter, request *http.Request) {
+	username, _ := get_template_values(request)
+
 	set_cookie(writer, "username", "")
+	if username != "" {
+		set_cookie(writer, "message", "Successfully logged out")
+	}
+
 	redirect(writer, request, "/")
 }
 
