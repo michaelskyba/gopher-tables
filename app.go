@@ -63,6 +63,14 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 func login_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	if request.Method == http.MethodPost {
+
+		// Cookie test
+		fmt.Println(request.Cookies())
+		http.SetCookie(writer, &http.Cookie{
+			              Name: "name_test",
+			              Value: "value_test",
+		})
+
 		fmt.Println(request.FormValue("username"))
 		fmt.Println(request.FormValue("password"))
 
