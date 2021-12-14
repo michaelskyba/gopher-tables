@@ -39,6 +39,7 @@ func set_cookie(writer http.ResponseWriter, name, value string) {
 	http.SetCookie(writer, &http.Cookie{
 		              Name: name,
 		              Value: value,
+		              Path: "/",
 	})
 }
 
