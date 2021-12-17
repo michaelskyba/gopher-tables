@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"html/template"
 	"log"
 	"net/http"
-	"html/template"
+	"os"
 	"regexp"
 
-	"github.com/go-sql-driver/mysql"
 	"database/sql"
+	"github.com/go-sql-driver/mysql"
 )
 
 var templates = template.Must(template.ParseFiles(
@@ -20,12 +20,12 @@ var templates = template.Must(template.ParseFiles(
 	"html/lobby.html"))
 
 type template_values struct {
-	Message string
+	Message  string
 	LoggedIn bool
 }
 
 type account struct {
-	ID int
+	ID       int
 	username string
 	password string
 }
@@ -39,9 +39,9 @@ func handle(err error) {
 
 func set_cookie(writer http.ResponseWriter, name, value string) {
 	http.SetCookie(writer, &http.Cookie{
-		              Name: name,
-		              Value: value,
-		              Path: "/",
+		Name:  name,
+		Value: value,
+		Path:  "/",
 	})
 }
 
@@ -110,35 +110,37 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 // Log in URL point for submitting the log in form
 func login_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	if request.Method == http.MethodPost {
+	if request.Method != http.MethodPost {
+		return
+	}
 
-		form_username := request.FormValue("username")
-		form_password := request.FormValue("password")
+	form_username := request.FormValue("username")
+	form_password := request.FormValue("password")
 
-		rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
+	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
+	handle(err)
+	defer rows.Close()
+
+	success := false
+	for rows.Next() {
+		var current account
+		err = rows.Scan(&current.ID, &current.username, &current.password)
 		handle(err)
-		defer rows.Close()
 
-		success := false
-		for rows.Next() {
-			var current account
-			err = rows.Scan(&current.ID, &current.username, &current.password)
-			handle(err)
-
-			if current.password == form_password {
-				success = true
-			}
-		}
-
-		if success {
-				set_cookie(writer, "username", form_username)
-				set_cookie(writer, "message", "Successfully logged in")
-				redirect(writer, request, "/")
-		} else {
-				set_cookie(writer, "message", "Error: Invalid credentials")
-				redirect(writer, request, "/login/")
+		if current.password == form_password {
+			success = true
 		}
 	}
+
+	if !success {
+		set_cookie(writer, "message", "Error: Invalid credentials")
+		redirect(writer, request, "/login/")
+		return
+	}
+
+	set_cookie(writer, "username", form_username)
+	set_cookie(writer, "message", "Successfully logged in")
+	redirect(writer, request, "/")
 }
 
 // Register page
@@ -224,11 +226,11 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 func main() {
 	// Database setup
 	config := mysql.Config{
-		User:   "michael",
-		Passwd: "password",
-		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
-		DBName: "db",
+		User:                 "michael",
+		Passwd:               "password",
+		Net:                  "tcp",
+		Addr:                 "127.0.0.1:3306",
+		DBName:               "db",
 		AllowNativePasswords: true,
 	}
 
@@ -245,12 +247,12 @@ func main() {
 
 	http.HandleFunc("/", home_handler)
 	http.HandleFunc("/login/", login_get_handler)
-	http.HandleFunc("/login_post/", func (writer http.ResponseWriter, request *http.Request) {
-		            login_post_handler(writer, request, db)
+	http.HandleFunc("/login_post/", func(writer http.ResponseWriter, request *http.Request) {
+		login_post_handler(writer, request, db)
 	})
 	http.HandleFunc("/register/", register_get_handler)
-	http.HandleFunc("/register_post/", func (writer http.ResponseWriter, request *http.Request) {
-		            register_post_handler(writer, request, db)
+	http.HandleFunc("/register_post/", func(writer http.ResponseWriter, request *http.Request) {
+		register_post_handler(writer, request, db)
 	})
 	http.HandleFunc("/lobby/", lobby_handler)
 	http.HandleFunc("/logout/", logout_handler)
