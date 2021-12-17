@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"html/template"
+	"regexp"
 
 	"github.com/go-sql-driver/mysql"
 	"database/sql"
@@ -157,13 +158,20 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 // Register URL pointing for submitting POST request form
 func register_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	// form_username := request.FormValue("username")
+	form_username := request.FormValue("username")
 	form_password := request.FormValue("password")
 	form_confirm := request.FormValue("confirm")
 
 	// Passwords don't match
 	if form_password != form_confirm {
 		set_cookie(writer, "message", "Error: Passwords don't match")
+		redirect(writer, request, "/register/")
+	}
+
+	// Validate usernames before sending to SQL to avoid injection
+	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
+	if !valid.MatchString(form_username) {
+		set_cookie(writer, "message", "Error: Username must match '^[a-zA-Z0-9 _-]+$'")
 		redirect(writer, request, "/register/")
 	}
 
