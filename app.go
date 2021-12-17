@@ -117,6 +117,11 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	form_username := request.FormValue("username")
 	form_password := request.FormValue("password")
 
+	if form_username == "" {
+		set_cookie(writer, "message", "Error: Invalid credentials")
+		redirect(writer, request, "/login/")
+	}
+
 	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
 	handle(err)
 	defer rows.Close()
