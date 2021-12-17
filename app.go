@@ -184,8 +184,10 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		redirect(writer, request, "/register/")
 	}
 
-	set_cookie(writer, "message", "Request received")
-	redirect(writer, request, "/register/")
+	// Log in
+	set_cookie(writer, "username", form_username)
+	set_cookie(writer, "message", "Successfully registered")
+	redirect(writer, request, "/")
 }
 
 // Lobby
