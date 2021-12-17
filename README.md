@@ -48,4 +48,5 @@ $BROWSER localhost:8000
 - https://learnxinyminutes.com/docs/go/
 - https://tour.golang.org/
 - https://go.dev/doc/articles/wiki/
+- https://go.dev/doc/tutorial/database-access
 - https://pkg.go.dev/
