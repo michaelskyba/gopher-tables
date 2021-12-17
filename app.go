@@ -166,6 +166,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	if form_password != form_confirm {
 		set_cookie(writer, "message", "Error: Passwords don't match")
 		redirect(writer, request, "/register/")
+		return
 	}
 
 	// Validate usernames before sending to SQL to avoid injection
@@ -173,6 +174,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	if !valid.MatchString(form_username) {
 		set_cookie(writer, "message", "Error: Username must match '^[a-zA-Z0-9 _-]+$'")
 		redirect(writer, request, "/register/")
+		return
 	}
 
 	// Check if username taken
@@ -182,6 +184,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	if rows.Next() {
 		set_cookie(writer, "message", "Error: Username taken")
 		redirect(writer, request, "/register/")
+		return
 	}
 
 	// Add user to database
