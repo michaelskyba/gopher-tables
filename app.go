@@ -157,7 +157,16 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 // Register URL pointing for submitting POST request form
 func register_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	// Check if username is taken
+	// form_username := request.FormValue("username")
+	form_password := request.FormValue("password")
+	form_confirm := request.FormValue("confirm")
+
+	// Passwords don't match
+	if form_password != form_confirm {
+		set_cookie(writer, "message", "Error: Passwords don't match")
+		redirect(writer, request, "/register/")
+	}
+
 	set_cookie(writer, "message", "Request received")
 	redirect(writer, request, "/register/")
 }
