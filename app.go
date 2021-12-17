@@ -184,6 +184,10 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		redirect(writer, request, "/register/")
 	}
 
+	// Add user to database
+	_, err = db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", form_username, form_password)
+	handle(err)
+
 	// Log in
 	set_cookie(writer, "username", form_username)
 	set_cookie(writer, "message", "Successfully registered")
