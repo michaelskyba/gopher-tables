@@ -176,7 +176,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	}
 
 	// Check if username taken
-	rows, err := db.Query("SELECT * FROM accounts where USERNAME = ?", form_username)
+	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
 	handle(err)
 	defer rows.Close()
 	if rows.Next() {
