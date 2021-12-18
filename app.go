@@ -28,6 +28,12 @@ type account struct {
 	ID       int
 	username string
 	password string
+	wins     int
+}
+
+type profile struct {
+	Username string
+	Wins     int
 }
 
 func handle(err error) {
@@ -204,6 +210,31 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	redirect(writer, request, "/")
 }
 
+// Profile
+func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	username, _ := get_template_values(request)
+
+	// Not logged in
+	if username == "" {
+		redirect(writer, request, "/")
+	}
+
+	// Find user's win count
+	// Breaks if the user injects a non-existent username as browser cookie
+
+	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", username)
+
+	var current account
+	rows.Next()
+	err = rows.Scan(&current.ID, &current.username, &current.password, &current.wins)
+	handle(err)
+
+	// Send data to template
+	// Can't use render_template because it needs template_values
+	err = templates.ExecuteTemplate(writer, "profile.html", profile{username, current.wins})
+	handle(err)
+}
+
 // Lobby
 func lobby_handler(writer http.ResponseWriter, request *http.Request) {
 
@@ -258,6 +289,9 @@ func main() {
 	http.HandleFunc("/register/", register_get_handler)
 	http.HandleFunc("/register_post/", func(writer http.ResponseWriter, request *http.Request) {
 		register_post_handler(writer, request, db)
+	})
+	http.HandleFunc("/profile/", func(writer http.ResponseWriter, request *http.Request) {
+		profile_handler(writer, request, db)
 	})
 	http.HandleFunc("/lobby/", lobby_handler)
 	http.HandleFunc("/logout/", logout_handler)
