@@ -28,6 +28,7 @@ type account struct {
 	ID       int
 	username string
 	password string
+	wins     int
 }
 
 func handle(err error) {
@@ -129,7 +130,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	success := false
 	for rows.Next() {
 		var current account
-		err = rows.Scan(&current.ID, &current.username, &current.password)
+		err = rows.Scan(&current.ID, &current.username, &current.password, &current.wins)
 		handle(err)
 
 		if current.password == form_password {
