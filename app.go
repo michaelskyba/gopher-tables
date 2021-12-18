@@ -218,6 +218,7 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 	// Not logged in
 	if username == "" {
 		redirect(writer, request, "/")
+		return
 	}
 
 	// Find user's win count
