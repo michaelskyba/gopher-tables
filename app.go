@@ -17,6 +17,7 @@ var templates = template.Must(template.ParseFiles(
 	"html/404.html",
 	"html/login.html",
 	"html/register.html",
+	"html/profile.html",
 	"html/lobby.html"))
 
 type template_values struct {
