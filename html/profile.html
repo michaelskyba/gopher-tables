@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<link href="/static/css/sakura.css" rel="stylesheet">
+
+		<title>{{.Username}}</title>
+	</head>
+	<body>
+		<h1>{{.Username}}</h1>
+
+		<a href="/" id="left">Home</a>
+		<a href="/profile/">My Profile</a>
+		<a href="/lobby/">Play</a>
+		<a href="/logout/">Log out</a>
+
+		<p>Level <span id="level"></span></p>
+		<label for="progress"><span id="percent"></span>%</label>
+		<progress id="progress" value="25" max="100"></progress>
+
+		<script>
+			const wins = {{.Wins}}
+		</script>
+		<script src="/static/js/profile.js"></script>
+	</body>
+</html>
