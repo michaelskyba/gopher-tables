@@ -4,6 +4,16 @@
 		<meta charset="utf-8">
 		<link href="/static/css/sakura.css" rel="stylesheet">
 
+		<style>
+			ul {
+				margin-top: 20px;
+			}
+
+			.join_button {
+				margin-right: 25px;
+			}
+		</style>
+
 		<title>Lobby</title>
 	</head>
 	<body>
@@ -14,8 +24,19 @@
 		<a href="/lobby/">Play</a>
 		<a href="/logout/">Log out</a>
 
-		<!-- <p>No games found.</p> -->
-		<p>{{.Games}}</p>
+		{{if .Games}}
+			<ul>
+			{{range .Games}}
+				<li>
+					<input type="button" class="join_button" value="Join">
+					{{.}}
+				</li>
+			{{end}}
+			</ul>
+		{{else}}
+			<p>No games found.</p>
+		{{end}}
+
 		<input type="button" value="Refresh" id="refresh">
 		<input type="button" value="Create game" id="create">
 
