@@ -25,6 +25,10 @@ type template_values struct {
 	LoggedIn bool
 }
 
+type lobby struct {
+	Games []string
+}
+
 type account struct {
 	ID       int
 	username string
@@ -238,15 +242,32 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 }
 
 // Lobby
-func lobby_handler(writer http.ResponseWriter, request *http.Request) {
+func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	signed_in := true
-	username, message := get_template_values(request)
+	username, _ := get_template_values(request)
 	if username == "" {
-		signed_in = false
+		redirect(writer, request, "/")
+		return
+	}
+	current := lobby{}
+
+	// Get list of games from database
+	rows, err := db.Query("SELECT * FROM games")
+	handle(err)
+	defer rows.Close()
+
+	for rows.Next() {
+		var name, password string
+		var id int
+
+		err = rows.Scan(&id, &name, &password)
+		handle(err)
+
+		current.Games = append(current.Games, name)
 	}
 
-	render_template("lobby.html", writer, template_values{message, signed_in})
+	err = templates.ExecuteTemplate(writer, "lobby.html", current)
+	handle(err)
 }
 
 // Log out
@@ -295,7 +316,9 @@ func main() {
 	http.HandleFunc("/profile/", func(writer http.ResponseWriter, request *http.Request) {
 		profile_handler(writer, request, db)
 	})
-	http.HandleFunc("/lobby/", lobby_handler)
+	http.HandleFunc("/lobby/", func(writer http.ResponseWriter, request *http.Request) {
+		lobby_handler(writer, request, db)
+	})
 	http.HandleFunc("/logout/", logout_handler)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
