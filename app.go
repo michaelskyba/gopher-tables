@@ -288,6 +288,14 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		return
 	}
 
+	// Avoid SQL injection
+	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
+	if !valid.MatchString(path[2]) {
+		set_cookie(writer, "message", "Error: Game not found")
+		redirect(writer, request, "/")
+		return
+	}
+
 	// Get list of games from database
 	rows, err := db.Query("SELECT * FROM games WHERE name = ?", path[2])
 	handle(err)
