@@ -1,13 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
-	"log"
 	"net/http"
-	"os"
+
+	"fmt"
+	"log"
+	"strings"
 	"regexp"
 
+	"os"
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
 )
@@ -270,6 +272,49 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	handle(err)
 }
 
+// /join/x, accessed when pressing "Join" on a game
+func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+
+	username, _ := get_template_values(request)
+	if username == "" {
+		redirect(writer, request, "/")
+		return
+	}
+	current := lobby{}
+
+	path := strings.Split(request.URL.Path, "/")
+	if len(path) != 4 {
+		redirect(writer, request, "/")
+		return
+	}
+
+	// Get list of games from database
+	rows, err := db.Query("SELECT * FROM games WHERE name = ?", path[2])
+	handle(err)
+	defer rows.Close()
+	if rows.Next() {
+		var name, password string
+		var id int
+
+		err = rows.Scan(&id, &name, &password)
+		handle(err)
+
+		current.Games = append(current.Games, name)
+
+	// No game with that ID
+	} else {
+		set_cookie(writer, "message", "Error: Game not found")
+		redirect(writer, request, "/")
+		return
+	}
+
+	set_cookie(writer, "message", "Game found!")
+	redirect(writer, request, "/")
+
+	// err = templates.ExecuteTemplate(writer, "lobby.html", current)
+	// handle(err)
+}
+
 // Log out
 func logout_handler(writer http.ResponseWriter, request *http.Request) {
 	username, _ := get_template_values(request)
@@ -318,6 +363,9 @@ func main() {
 	})
 	http.HandleFunc("/lobby/", func(writer http.ResponseWriter, request *http.Request) {
 		lobby_handler(writer, request, db)
+	})
+	http.HandleFunc("/join/", func(writer http.ResponseWriter, request *http.Request) {
+		join_handler(writer, request, db)
 	})
 	http.HandleFunc("/logout/", logout_handler)
 
