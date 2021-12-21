@@ -133,7 +133,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	form_password := request.FormValue("password")
 
 	if form_username == "" {
-		set_cookie(writer, "message", "Error: Invalid credentials")
+		set_cookie(writer, "message", "Error: You have entered invalid credentials.")
 		redirect(writer, request, "/login/")
 		return
 	}
@@ -154,13 +154,13 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	}
 
 	if !success {
-		set_cookie(writer, "message", "Error: Invalid credentials")
+		set_cookie(writer, "message", "Error: You have entered invalid credentials.")
 		redirect(writer, request, "/login/")
 		return
 	}
 
 	set_cookie(writer, "username", form_username)
-	set_cookie(writer, "message", "Successfully logged in")
+	set_cookie(writer, "message", "You have successfully logged in.")
 	redirect(writer, request, "/")
 }
 
@@ -189,7 +189,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 
 	// Passwords don't match
 	if form_password != form_confirm {
-		set_cookie(writer, "message", "Error: Passwords don't match")
+		set_cookie(writer, "message", "Error: Your passwords don't match.")
 		redirect(writer, request, "/register/")
 		return
 	}
@@ -197,7 +197,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	// Validate usernames before sending to SQL to avoid injection
 	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
 	if !valid.MatchString(form_username) {
-		set_cookie(writer, "message", "Error: Username must match '^[a-zA-Z0-9 _-]+$'")
+		set_cookie(writer, "message", "Error: Your username must match '^[a-zA-Z0-9 _-]+$'.")
 		redirect(writer, request, "/register/")
 		return
 	}
@@ -207,7 +207,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	handle(err)
 	defer rows.Close()
 	if rows.Next() {
-		set_cookie(writer, "message", "Error: Username taken")
+		set_cookie(writer, "message", "Error: That username is taken.")
 		redirect(writer, request, "/register/")
 		return
 	}
@@ -218,7 +218,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 
 	// Log in
 	set_cookie(writer, "username", form_username)
-	set_cookie(writer, "message", "Successfully registered")
+	set_cookie(writer, "message", "You have successfully registered.")
 	redirect(writer, request, "/")
 }
 
@@ -320,7 +320,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// No game with that name
 	} else {
-		set_cookie(writer, "message", "Error: Game not found")
+		set_cookie(writer, "message", "Error: That game was not found.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -338,9 +338,9 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 
 	set_cookie(writer, "username", "")
 	if username != "" {
-		set_cookie(writer, "message", "Successfully logged out")
+		set_cookie(writer, "message", "You have successfully logged out.")
 	} else {
-		set_cookie(writer, "message", "You're already logged out")
+		set_cookie(writer, "message", "You're already logged out.")
 	}
 
 	redirect(writer, request, "/")
