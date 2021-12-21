@@ -20,7 +20,8 @@ var templates = template.Must(template.ParseFiles(
 	"html/login.html",
 	"html/register.html",
 	"html/profile.html",
-	"html/lobby.html"))
+	"html/lobby.html",
+	"html/play.html"))
 
 type template_values struct {
 	Message  string
@@ -332,6 +333,14 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// handle(err)
 }
 
+func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	// Check if they have joined. Otherwise, redirect them to /join/
+	// (TODO)
+
+	err := templates.ExecuteTemplate(writer, "play.html", lobby{})
+	handle(err)
+}
+
 // Log out
 func logout_handler(writer http.ResponseWriter, request *http.Request) {
 	username, _ := get_template_values(request)
@@ -385,6 +394,9 @@ func main() {
 	})
 	http.HandleFunc("/join/", func(writer http.ResponseWriter, request *http.Request) {
 		join_handler(writer, request, db)
+	})
+	http.HandleFunc("/play/", func(writer http.ResponseWriter, request *http.Request) {
+		play_handler(writer, request, db)
 	})
 	http.HandleFunc("/logout/", logout_handler)
 
