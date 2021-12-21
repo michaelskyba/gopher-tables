@@ -334,7 +334,15 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 }
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-	// Check if they have joined. Otherwise, redirect them to /join/
+
+	// Not logged in 
+	username, _ := get_template_values(request)
+	if username == "" {
+		set_cookie(writer, "message", "Log in to play.")
+		redirect(writer, request, "/")
+	}
+
+	// Have they joined this game?
 	// (TODO)
 
 	err := templates.ExecuteTemplate(writer, "play.html", lobby{})
