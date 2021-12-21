@@ -9,9 +9,10 @@ document.getElementById("create").onclick = function() {
 }
 
 // Individual game buttons
+let names   = document.getElementsByClassName("join_name")
 let buttons = document.getElementsByClassName("join_button")
 for (let i = 0; i < buttons.length; i++) {
 	buttons[i].onclick = function() {
-		window.location.replace(`/join/${i}/`)
+		window.location.replace(`/join/${names[i].innerHTML}/`)
 	}
 }

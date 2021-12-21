@@ -272,7 +272,7 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	handle(err)
 }
 
-// /join/x, accessed when pressing "Join" on a game
+// /join/<name>/, accessed when pressing "Join" on a game
 func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	username, _ := get_template_values(request)
@@ -301,7 +301,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 		current.Games = append(current.Games, name)
 
-	// No game with that ID
+	// No game with that name
 	} else {
 		set_cookie(writer, "message", "Error: Game not found")
 		redirect(writer, request, "/")
