@@ -113,7 +113,9 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	// Already logged in
 	if username != "" {
+		set_cookie(writer, "message", "You're already logged in.")
 		redirect(writer, request, "/")
+		return
 	}
 
 	set_cookie(writer, "message", "")
@@ -133,6 +135,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	if form_username == "" {
 		set_cookie(writer, "message", "Error: Invalid credentials")
 		redirect(writer, request, "/login/")
+		return
 	}
 
 	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
@@ -168,7 +171,9 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	// Redirect to homepage if already signed in
 	if username != "" {
+		set_cookie(writer, "message", "You're already logged in.")
 		redirect(writer, request, "/")
+		return
 	}
 
 	set_cookie(writer, "message", "")
@@ -223,6 +228,7 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 
 	// Not logged in
 	if username == "" {
+		set_cookie(writer, "message", "Log in to see your profile.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -248,6 +254,7 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 
 	username, _ := get_template_values(request)
 	if username == "" {
+		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -277,6 +284,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	username, _ := get_template_values(request)
 	if username == "" {
+		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -284,6 +292,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	path := strings.Split(request.URL.Path, "/")
 	if len(path) != 4 {
+		set_cookie(writer, "message", "Visit the lobby (press 'Play') to join a game.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -291,7 +300,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// Avoid SQL injection
 	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
 	if !valid.MatchString(path[2]) {
-		set_cookie(writer, "message", "Error: Game not found")
+		set_cookie(writer, "message", "Visit the lobby (press 'Play') to join a game.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -330,6 +339,8 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 	set_cookie(writer, "username", "")
 	if username != "" {
 		set_cookie(writer, "message", "Successfully logged out")
+	} else {
+		set_cookie(writer, "message", "You're already logged out")
 	}
 
 	redirect(writer, request, "/")
