@@ -81,11 +81,6 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 	http.Redirect(writer, request, path, http.StatusSeeOther)
 }
 
-func render_template(filename string, writer http.ResponseWriter, values template_values) {
-	err := templates.ExecuteTemplate(writer, filename, values)
-	handle(err)
-}
-
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
 
@@ -95,16 +90,24 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 		signed_in = false
 	}
 
+	var html string
+	var values template_values
+
 	// Normal
 	if request.URL.Path == "/" {
 		set_cookie(writer, "message", "")
-		render_template("index.html", writer, template_values{message, signed_in})
+
+		html = "index.html"
+		values = template_values{message, signed_in}
 
 	// 404
 	} else {
-		values := template_values{request.URL.Path, false}
-		render_template("404.html", writer, values)
+		html = "404.html"
+		values = template_values{request.URL.Path, false}
 	}
+
+	err := templates.ExecuteTemplate(writer, html, values)
+	handle(err)
 }
 
 // Log in page
@@ -120,7 +123,10 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	set_cookie(writer, "message", "")
-	render_template("login.html", writer, template_values{message, false})
+
+	values := template_values{message, false}
+	err := templates.ExecuteTemplate(writer, "login.html", values)
+	handle(err)
 }
 
 // Log in URL point for submitting the log in form
@@ -178,7 +184,8 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	set_cookie(writer, "message", "")
-	render_template("register.html", writer, template_values{message, false})
+	err := templates.ExecuteTemplate(writer, "register.html", template_values{message, false})
+	handle(err)
 }
 
 // Register URL pointing for submitting POST request form
@@ -244,8 +251,6 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 	err = rows.Scan(&current.ID, &current.username, &current.password, &current.wins)
 	handle(err)
 
-	// Send data to template
-	// Can't use render_template because it needs template_values
 	err = templates.ExecuteTemplate(writer, "profile.html", profile{username, current.wins})
 	handle(err)
 }
