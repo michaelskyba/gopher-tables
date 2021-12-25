@@ -21,7 +21,8 @@ var templates = template.Must(template.ParseFiles(
 	"html/register.html",
 	"html/profile.html",
 	"html/lobby.html",
-	"html/play.html"))
+	"html/play.html",
+	"html/create.html"))
 
 type template_values struct {
 	Message  string
@@ -354,6 +355,19 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	handle(err)
 }
 
+// Create game page
+func create_get_handler(writer http.ResponseWriter, request *http.Request) {
+	username, _ := get_template_values(request)
+
+	if username == "" {
+		set_cookie(writer, "message", "Log in to create a game.")
+		redirect(writer, request, "/")
+	}
+
+	err := templates.ExecuteTemplate(writer, "create.html", lobby{})
+	handle(err)
+}
+
 // Log out
 func logout_handler(writer http.ResponseWriter, request *http.Request) {
 	username, _ := get_template_values(request)
@@ -411,6 +425,7 @@ func main() {
 	http.HandleFunc("/play/", func(writer http.ResponseWriter, request *http.Request) {
 		play_handler(writer, request, db)
 	})
+	http.HandleFunc("/create/", create_get_handler)
 	http.HandleFunc("/logout/", logout_handler)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
