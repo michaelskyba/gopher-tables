@@ -13,5 +13,15 @@
 		<a href="/profile/">My Profile</a>
 		<a href="/lobby/">Play</a>
 		<a href="/logout/">Log out</a>
+
+		{{if .Message}}
+			<blockquote>{{.Message}}</blockquote>
+		{{end}}
+
+		<form action="/create_post/" method="post">
+			<input name="name" type="text" maxlength="15" placeholder="Room name">
+			<input name="password" placeholder="Password (optional)">
+			<input type="submit" value="Create">
+		</form>
 	</body>
 </html>

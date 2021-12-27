@@ -357,14 +357,14 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 // Create game page
 func create_get_handler(writer http.ResponseWriter, request *http.Request) {
-	username, _ := get_template_values(request)
+	username, message := get_template_values(request)
 
 	if username == "" {
 		set_cookie(writer, "message", "Log in to create a game.")
 		redirect(writer, request, "/")
 	}
 
-	err := templates.ExecuteTemplate(writer, "create.html", lobby{})
+	err := templates.ExecuteTemplate(writer, "create.html", template_values{message, true})
 	handle(err)
 }
 
