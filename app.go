@@ -81,14 +81,12 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 	var html string
 	var values template_values
 
-	// Normal
 	if request.URL.Path == "/" {
 		set_cookie(writer, "message", "")
 
 		html = "index.html"
 		values = template_values{message, username != ""}
 
-	// 404
 	} else {
 		html = "404.html"
 		values = template_values{request.URL.Path, false}
@@ -104,7 +102,6 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 	username := get_cookie(request, "username")
 	message  := get_cookie(request, "message")
 
-	// Already logged in
 	if username != "" {
 		set_cookie(writer, "message", "You're already logged in.")
 		redirect(writer, request, "/")
@@ -166,7 +163,6 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 	username := get_cookie(request, "username")
 	message  := get_cookie(request, "message")
 
-	// Redirect to homepage if already signed in
 	if username != "" {
 		set_cookie(writer, "message", "You're already logged in.")
 		redirect(writer, request, "/")
@@ -185,7 +181,6 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 	form_password := request.FormValue("password")
 	form_confirm := request.FormValue("confirm")
 
-	// Passwords don't match
 	if form_password != form_confirm {
 		set_cookie(writer, "message", "Error: Your passwords don't match.")
 		redirect(writer, request, "/register/")
@@ -200,7 +195,6 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		return
 	}
 
-	// Check if username taken
 	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
 	handle(err)
 	defer rows.Close()
@@ -210,7 +204,6 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		return
 	}
 
-	// Add user to database
 	_, err = db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", form_username, form_password)
 	handle(err)
 
@@ -224,7 +217,6 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 	username := get_cookie(request, "username")
 
-	// Not logged in
 	if username == "" {
 		set_cookie(writer, "message", "Log in to see your profile.")
 		redirect(writer, request, "/")
@@ -304,7 +296,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 		current.Games = append(current.Games, name)
 
-	// No game with that name
 	} else {
 		set_cookie(writer, "message", "Error: That game was not found.")
 		redirect(writer, request, "/")
@@ -320,7 +311,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	// Not logged in 
 	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
@@ -392,7 +382,6 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	// Database setup
 	config := mysql.Config{
 		User:                 "michael",
 		Passwd:               "password",
@@ -409,7 +398,6 @@ func main() {
 	err = db.Ping()
 	handle(err)
 
-	// Static file serving
 	server := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", server))
 
