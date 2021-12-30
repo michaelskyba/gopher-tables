@@ -363,6 +363,14 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		return
 	}
 
+	name := request.FormValue("name")
+	// password := request.FormValue("password")
+
+	if len(name) > 15 {
+		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin")
+		redirect(writer, request, "/create/")
+	}
+
 	set_cookie(writer, "message", "Request received")
 	redirect(writer, request, "/create/")
 }
