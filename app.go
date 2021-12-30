@@ -152,6 +152,12 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 		return
 	}
 
+	// TODO:
+	// Hash their login password and store it as a cookie.
+	// Then, when checking their username, check this pair.
+	// This would prevent people from impersonating someone by adding their
+	// username as their 'username' cookie manually.
+
 	set_cookie(writer, "username", form_username)
 	set_cookie(writer, "message", "You have successfully logged in.")
 	redirect(writer, request, "/")
@@ -203,6 +209,8 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		redirect(writer, request, "/register/")
 		return
 	}
+
+	// TODO: Hash password instead of storing in plaintext
 
 	_, err = db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", form_username, form_password)
 	handle(err)
@@ -302,6 +310,18 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		return
 	}
 
+	// TODO: Don't let a player join if they're already in a room
+
+	// TODO: Add the user to the players table to say that they have officially joined
+
+	// TODO: Redirect to /play/
+
+	// TODO:
+	// Serve an HTML page with a password form if the game has a password
+	// The password they input should be validated in a handler, maybe room_password_handler
+	// If the password is correct, it should be stored as a cookie and then the user
+	// should be redirected to /play/
+
 	set_cookie(writer, "message", "Game found!")
 	redirect(writer, request, "/")
 
@@ -316,8 +336,11 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		redirect(writer, request, "/")
 	}
 
-	// Have they joined this game?
-	// (TODO)
+	// TODO: Check if the player has joined or not in the players table
+
+	// TODO:
+	// Validate the game password cookie the player has if
+	// this room is password-protected
 
 	err := templates.ExecuteTemplate(writer, "play.html", lobby{})
 	handle(err)
@@ -361,8 +384,14 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		redirect(writer, request, "/create/")
 	}
 
+	// TODO: Check if room name already exists
+
 	_, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
 	handle(err)
+
+	// TODO: Declare this player as having joined the game in the players database
+
+	// TODO: Redirect to /play/ for their new room
 
 	set_cookie(writer, "message", "Request received")
 	redirect(writer, request, "/create/")
