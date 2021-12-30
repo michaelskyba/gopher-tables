@@ -358,6 +358,14 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	name := request.FormValue("name")
 	password := request.FormValue("password")
 
+	// Ensure standard-looking room names
+	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
+	if !valid.MatchString(name) {
+		set_cookie(writer, "message", "Error: Your room's name must match '^[a-zA-Z0-9 _-]+$'.")
+		redirect(writer, request, "/create/")
+		return
+	}
+
 	if len(name) > 15 {
 		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin")
 		redirect(writer, request, "/create/")
