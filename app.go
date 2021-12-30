@@ -69,42 +69,14 @@ func get_cookie(request *http.Request, name string) string {
 	return cookie.Value
 }
 
-// Returns the username and message of the current session
-func get_template_values(request *http.Request) (string, string) {
-
-	var username string
-	var message string
-
-	for _, cookie := range request.Cookies() {
-		if cookie.Name == "username" {
-			username = cookie.Value
-		}
-		if cookie.Name == "message" {
-			message = cookie.Value
-		}
-	}
-
-	return username, message
-}
-
 func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 	http.Redirect(writer, request, path, http.StatusSeeOther)
 }
 
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
-	// cookie, _ := request.Cookie("username")
-	// username = cookie.value
-
-	// signed_in := true
-	// username, message := get_template_values(request)
-
 	username := get_cookie(request, "username")
 	message  := get_cookie(request, "message")
-
-	// if username == "" {
-		// signed_in = false
-	// }
 
 	var html string
 	var values template_values
@@ -129,7 +101,8 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 // Log in page
 func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 
-	username, message := get_template_values(request)
+	username := get_cookie(request, "username")
+	message  := get_cookie(request, "message")
 
 	// Already logged in
 	if username != "" {
@@ -190,7 +163,8 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 // Register page
 func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 
-	username, message := get_template_values(request)
+	username := get_cookie(request, "username")
+	message  := get_cookie(request, "message")
 
 	// Redirect to homepage if already signed in
 	if username != "" {
@@ -248,7 +222,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 
 // Profile
 func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-	username, _ := get_template_values(request)
+	username := get_cookie(request, "username")
 
 	// Not logged in
 	if username == "" {
@@ -274,8 +248,7 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 // Lobby
 func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	username, _ := get_template_values(request)
-	if username == "" {
+	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
@@ -304,8 +277,7 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 // /join/<name>/, accessed when pressing "Join" on a game
 func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	username, _ := get_template_values(request)
-	if username == "" {
+	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
@@ -357,8 +329,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	// Not logged in 
-	username, _ := get_template_values(request)
-	if username == "" {
+	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 	}
@@ -372,26 +343,25 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 // Create game page
 func create_get_handler(writer http.ResponseWriter, request *http.Request) {
-	username, message := get_template_values(request)
 
-	if username == "" {
+	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to create a game.")
 		redirect(writer, request, "/")
 	}
 
+	message := get_cookie(request, "message")
 	err := templates.ExecuteTemplate(writer, "create.html", template_values{message, true})
 	handle(err)
 }
 
 // Log out
 func logout_handler(writer http.ResponseWriter, request *http.Request) {
-	username, _ := get_template_values(request)
 
-	set_cookie(writer, "username", "")
-	if username != "" {
-		set_cookie(writer, "message", "You have successfully logged out.")
-	} else {
+	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "You're already logged out.")
+	} else {
+		set_cookie(writer, "username", "")
+		set_cookie(writer, "message", "You have successfully logged out.")
 	}
 
 	redirect(writer, request, "/")
