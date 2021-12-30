@@ -350,8 +350,21 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	message := get_cookie(request, "message")
+	set_cookie(writer, "message", "")
+
 	err := templates.ExecuteTemplate(writer, "create.html", template_values{message, true})
 	handle(err)
+}
+
+// Create game form submission URL endpoint
+func create_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+
+	if request.Method != http.MethodPost {
+		return
+	}
+
+	set_cookie(writer, "message", "Request received")
+	redirect(writer, request, "/create/")
 }
 
 // Log out
@@ -411,6 +424,9 @@ func main() {
 		play_handler(writer, request, db)
 	})
 	http.HandleFunc("/create/", create_get_handler)
+	http.HandleFunc("/create_post/", func(writer http.ResponseWriter, request *http.Request) {
+		create_post_handler(writer, request, db)
+	})
 	http.HandleFunc("/logout/", logout_handler)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
