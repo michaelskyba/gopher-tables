@@ -364,12 +364,15 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	}
 
 	name := request.FormValue("name")
-	// password := request.FormValue("password")
+	password := request.FormValue("password")
 
 	if len(name) > 15 {
 		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin")
 		redirect(writer, request, "/create/")
 	}
+
+	_, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
+	handle(err)
 
 	set_cookie(writer, "message", "Request received")
 	redirect(writer, request, "/create/")
