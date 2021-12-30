@@ -321,12 +321,10 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// The password they input should be validated in a handler, maybe room_password_handler
 	// If the password is correct, it should be stored as a cookie and then the user
 	// should be redirected to /play/
-
-	set_cookie(writer, "message", "Game found!")
-	redirect(writer, request, "/")
-
 	// err = templates.ExecuteTemplate(writer, "lobby.html", current)
 	// handle(err)
+
+	redirect(writer, request, "/play/")
 }
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
