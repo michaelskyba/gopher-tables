@@ -60,6 +60,15 @@ func set_cookie(writer http.ResponseWriter, name, value string) {
 	})
 }
 
+func get_cookie(request *http.Request, name string) string {
+	cookie, err := request.Cookie(name)
+
+	if err != nil {
+		return ""
+	}
+	return cookie.Value
+}
+
 // Returns the username and message of the current session
 func get_template_values(request *http.Request) (string, string) {
 
@@ -84,12 +93,18 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
+	// cookie, _ := request.Cookie("username")
+	// username = cookie.value
 
-	signed_in := true
-	username, message := get_template_values(request)
-	if username == "" {
-		signed_in = false
-	}
+	// signed_in := true
+	// username, message := get_template_values(request)
+
+	username := get_cookie(request, "username")
+	message  := get_cookie(request, "message")
+
+	// if username == "" {
+		// signed_in = false
+	// }
 
 	var html string
 	var values template_values
@@ -99,7 +114,7 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 		set_cookie(writer, "message", "")
 
 		html = "index.html"
-		values = template_values{message, signed_in}
+		values = template_values{message, username != ""}
 
 	// 404
 	} else {
