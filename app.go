@@ -192,7 +192,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		return
 	}
 
-	// Validate usernames before sending to SQL to avoid injection
+	// Have standard-looking usernames
 	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
 	if !valid.MatchString(form_username) {
 		set_cookie(writer, "message", "Error: Your username must match '^[a-zA-Z0-9 _-]+$'.")
@@ -286,14 +286,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	path := strings.Split(request.URL.Path, "/")
 	if len(path) != 4 {
-		set_cookie(writer, "message", "Visit the lobby (press 'Play') to join a game.")
-		redirect(writer, request, "/")
-		return
-	}
-
-	// Avoid SQL injection
-	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
-	if !valid.MatchString(path[2]) {
 		set_cookie(writer, "message", "Visit the lobby (press 'Play') to join a game.")
 		redirect(writer, request, "/")
 		return
