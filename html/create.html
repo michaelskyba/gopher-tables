@@ -14,8 +14,8 @@
 		<a href="/lobby/">Play</a>
 		<a href="/logout/">Log out</a>
 
-		{{if .Message}}
-			<blockquote>{{.Message}}</blockquote>
+		{{if .}}
+			<blockquote>{{.}}</blockquote>
 		{{end}}
 
 		<form action="/create_post/" method="post">

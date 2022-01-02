@@ -13,8 +13,8 @@
 		<a href="/login/">Log in</a>
 		<a href="/register/">Register</a>
 
-		{{if .Message}}
-			<blockquote>{{.Message}}</blockquote>
+		{{if .}}
+			<blockquote>{{.}}</blockquote>
 		{{end}}
 
 		<form action="/register_post/" method="post">

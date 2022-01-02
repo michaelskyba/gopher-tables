@@ -110,11 +110,7 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	set_cookie(writer, "message", "")
 
-	type template_values struct {
-		Message  string
-	}
-	values := template_values{message}
-	err := templates.ExecuteTemplate(writer, "login.html", values)
+	err := templates.ExecuteTemplate(writer, "login.html", message)
 	handle(err)
 }
 
@@ -180,10 +176,7 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	set_cookie(writer, "message", "")
 
-	type template_values struct {
-		Message  string
-	}
-	err := templates.ExecuteTemplate(writer, "register.html", template_values{message})
+	err := templates.ExecuteTemplate(writer, "register.html", message)
 	handle(err)
 }
 
@@ -362,10 +355,7 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 	message := get_cookie(request, "message")
 	set_cookie(writer, "message", "")
 
-	type template_values struct {
-		Message  string
-	}
-	err := templates.ExecuteTemplate(writer, "create.html", template_values{message})
+	err := templates.ExecuteTemplate(writer, "create.html", message)
 	handle(err)
 }
 
