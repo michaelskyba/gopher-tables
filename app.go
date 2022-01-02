@@ -73,27 +73,24 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 	username := get_cookie(request, "username")
 	message  := get_cookie(request, "message")
 
-	var html string
-
-	type template_values struct {
-		Message  string
-		LoggedIn bool
-	}
-	var values template_values
-
 	if request.URL.Path == "/" {
 		set_cookie(writer, "message", "")
 
-		html = "index.html"
-		values = template_values{message, username != ""}
+		template_input := struct {
+			Message  string
+			LoggedIn bool
+		} {
+			message,
+			username != "",
+		}
+
+		err := templates.ExecuteTemplate(writer, "index.html", template_input)
+		handle(err)
 
 	} else {
-		html = "404.html"
-		values = template_values{request.URL.Path, false}
+		err := templates.ExecuteTemplate(writer, "404.html", request.URL.Path)
+		handle(err)
 	}
-
-	err := templates.ExecuteTemplate(writer, html, values)
-	handle(err)
 }
 
 // Log in page
