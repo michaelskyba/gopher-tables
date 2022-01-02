@@ -24,10 +24,6 @@ var templates = template.Must(template.ParseFiles(
 	"html/play.html",
 	"html/create.html"))
 
-type lobby struct {
-	Games []string
-}
-
 type account struct {
 	ID       int
 	username string
@@ -250,7 +246,10 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 		redirect(writer, request, "/")
 		return
 	}
-	current := lobby{}
+
+	var current struct {
+		Games []string
+	}
 
 	// Get list of games from database
 	rows, err := db.Query("SELECT * FROM games")
@@ -279,7 +278,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		redirect(writer, request, "/")
 		return
 	}
-	current := lobby{}
 
 	path := strings.Split(request.URL.Path, "/")
 	if len(path) != 4 {
@@ -299,8 +297,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		err = rows.Scan(&id, &name, &password)
 		handle(err)
 
-		current.Games = append(current.Games, name)
-
 	} else {
 		set_cookie(writer, "message", "Error: That game was not found.")
 		redirect(writer, request, "/")
@@ -318,8 +314,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// The password they input should be validated in a handler, maybe room_password_handler
 	// If the password is correct, it should be stored as a cookie and then the user
 	// should be redirected to /play/
-	// err = templates.ExecuteTemplate(writer, "lobby.html", current)
-	// handle(err)
 
 	redirect(writer, request, fmt.Sprintf("/play/%v/", path[2]))
 }
@@ -337,7 +331,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// Validate the game password cookie the player has if
 	// this room is password-protected
 
-	err := templates.ExecuteTemplate(writer, "play.html", lobby{})
+	err := templates.ExecuteTemplate(writer, "play.html", nil)
 	handle(err)
 }
 
