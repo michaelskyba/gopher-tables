@@ -24,11 +24,6 @@ var templates = template.Must(template.ParseFiles(
 	"html/play.html",
 	"html/create.html"))
 
-type template_values struct {
-	Message  string
-	LoggedIn bool
-}
-
 type lobby struct {
 	Games []string
 }
@@ -79,6 +74,11 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 	message  := get_cookie(request, "message")
 
 	var html string
+
+	type template_values struct {
+		Message  string
+		LoggedIn bool
+	}
 	var values template_values
 
 	if request.URL.Path == "/" {
@@ -110,7 +110,10 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	set_cookie(writer, "message", "")
 
-	values := template_values{message, false}
+	type template_values struct {
+		Message  string
+	}
+	values := template_values{message}
 	err := templates.ExecuteTemplate(writer, "login.html", values)
 	handle(err)
 }
@@ -176,7 +179,11 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	set_cookie(writer, "message", "")
-	err := templates.ExecuteTemplate(writer, "register.html", template_values{message, false})
+
+	type template_values struct {
+		Message  string
+	}
+	err := templates.ExecuteTemplate(writer, "register.html", template_values{message})
 	handle(err)
 }
 
@@ -355,7 +362,10 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 	message := get_cookie(request, "message")
 	set_cookie(writer, "message", "")
 
-	err := templates.ExecuteTemplate(writer, "create.html", template_values{message, true})
+	type template_values struct {
+		Message  string
+	}
+	err := templates.ExecuteTemplate(writer, "create.html", template_values{message})
 	handle(err)
 }
 
