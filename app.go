@@ -324,7 +324,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// err = templates.ExecuteTemplate(writer, "lobby.html", current)
 	// handle(err)
 
-	redirect(writer, request, "/play/")
+	redirect(writer, request, fmt.Sprintf("/play/%v/", path[2]))
 }
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
@@ -389,10 +389,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 
 	// TODO: Declare this player as having joined the game in the players database
 
-	// TODO: Redirect to /play/ for their new room
-
-	set_cookie(writer, "message", "Request received")
-	redirect(writer, request, "/create/")
+	redirect(writer, request, fmt.Sprintf("/play/%v/", name))
 }
 
 // Log out
