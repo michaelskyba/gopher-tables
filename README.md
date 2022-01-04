@@ -7,6 +7,8 @@ The backend is written in Go, using the ``net/http`` package. There's no
 frontend framework, only [sakura.css](https://github.com/oxalorg/sakura) for
 styling. Gopher Tables was created as a school project, meant for learning Go.
 
+Current status: it's unplayable but I'm actively working on it
+
 ## Database setup
 ```sh
 ssu -s # Any privilege elevation utility would work, e.g. su
