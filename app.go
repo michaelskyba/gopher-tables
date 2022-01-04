@@ -350,6 +350,18 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 	handle(err)
 }
 
+// API for the /play/ client to send requests to with AJAX
+// This will return the progress of the players so that the client can render them
+// Valid: /progress/game_name/
+func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	path := strings.Split(request.URL.Path, "/")
+
+	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
+	// TODO: Return error if the user hasn't joined
+
+	fmt.Fprintln(writer, path[2])
+}
+
 // Create game form submission URL endpoint
 func create_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
@@ -436,6 +448,9 @@ func main() {
 	})
 	http.HandleFunc("/play/", func(writer http.ResponseWriter, request *http.Request) {
 		play_handler(writer, request, db)
+	})
+	http.HandleFunc("/progress/", func(writer http.ResponseWriter, request *http.Request) {
+		progress_handler(writer, request, db)
 	})
 	http.HandleFunc("/create/", create_get_handler)
 	http.HandleFunc("/create_post/", func(writer http.ResponseWriter, request *http.Request) {
