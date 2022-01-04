@@ -33,6 +33,7 @@ CREATE TABLE players (
 	id			INT AUTO_INCREMENT NOT NULL,
 	game_id		INT NOT NULL,
 	user_id		INT NOT NULL,
+	progress	INT DEFAULT 0,
 	PRIMARY KEY (`id`)
 );
 
