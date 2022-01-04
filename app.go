@@ -10,6 +10,7 @@ import (
 	"regexp"
 
 	"os"
+	"encoding/json"
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
 )
@@ -354,12 +355,17 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 // This will return the progress of the players so that the client can render them
 // Valid: /progress/game_name/
 func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-	path := strings.Split(request.URL.Path, "/")
+	// path := strings.Split(request.URL.Path, "/")
 
 	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
 	// TODO: Return error if the user hasn't joined
 
-	fmt.Fprintln(writer, path[2])
+	progress := map[string]int{}
+	progress["Michael Skyba"] = 7
+	progress["Linus Torvalds"] = 2
+
+	encoder := json.NewEncoder(writer)
+	encoder.Encode(progress)
 }
 
 // Create game form submission URL endpoint
