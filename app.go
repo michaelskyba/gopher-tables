@@ -401,6 +401,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	game_id := path[2]
 
 	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
+	// TODO: Return error if the user isn't signed in
 	// TODO: Return error if the user hasn't joined
 	// TODO: Use the URL argument for the game_id instead of hardcoding "0"
 
@@ -439,6 +440,39 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 
 	encoder := json.NewEncoder(writer)
 	encoder.Encode(usernames)
+}
+
+// API for the /play/ client to send requests to with AJAX
+// This is used when answering questions - you submit your answer here to check if it
+// was right. If it was, your progress will be updated
+func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+
+	// TODO: Return error if the URL is invalid
+	// TODO: Return error if the user isn't signed in
+	// TODO: Return error if the user hasn't joined
+
+	username := "Michael Skyba"
+
+	// Find user ID and progress
+	var user_id, progress int
+	rows, err := db.Query(`SELECT accounts.id, players.progress
+	                     FROM accounts
+		                 INNER JOIN players ON accounts.id = players.user_id
+	                     WHERE accounts.username = ?`, username)
+	handle(err)
+
+	if rows.Next() {
+		err = rows.Scan(&user_id, &progress)
+		handle(err)
+	}
+	progress++
+
+	if progress == 10 {
+		fmt.Fprintln(writer, "Game over!")
+	}
+
+	fmt.Fprintln(writer, user_id)
+	fmt.Fprintln(writer, progress)
 }
 
 // Create game form submission URL endpoint
@@ -503,6 +537,8 @@ func main() {
 		AllowNativePasswords: true,
 	}
 
+	// TODO: Use SQL Joins instead of manually fiddling with IDs
+
 	db, err := sql.Open("mysql", config.FormatDSN())
 	handle(err)
 
@@ -536,6 +572,9 @@ func main() {
 	})
 	http.HandleFunc("/progress/", func(writer http.ResponseWriter, request *http.Request) {
 		progress_handler(writer, request, db)
+	})
+	http.HandleFunc("/answer/", func(writer http.ResponseWriter, request *http.Request) {
+		answer_handler(writer, request, db)
 	})
 	http.HandleFunc("/create/", create_get_handler)
 	http.HandleFunc("/create_post/", func(writer http.ResponseWriter, request *http.Request) {
