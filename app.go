@@ -58,24 +58,17 @@ func add_player(game_name, username string, db *sql.DB) {
 
 	// TODO: Don't let a player join if they're already in a game
 
+	// Find the game ID and user ID
 	var game_id, user_id int
-
-	// Find the game ID
-	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
+	rows, err := db.Query(`SELECT games.id, accounts.id
+	                      FROM games
+	                      INNER JOIN players  ON players.game_id = games.id
+	                      INNER JOIN accounts ON players.user_id = accounts.id
+	                      WHERE name = ? AND username = ?`, game_name, username)
 	handle(err)
 
 	if rows.Next() {
-		err = rows.Scan(&game_id)
-		handle(err)
-	}
-	rows.Close()
-
-	// Find user ID
-	rows, err = db.Query("SELECT id FROM accounts WHERE username = ?", username)
-	handle(err)
-
-	if rows.Next() {
-		err = rows.Scan(&user_id)
+		err = rows.Scan(&game_id, &user_id)
 		handle(err)
 	}
 	rows.Close()
