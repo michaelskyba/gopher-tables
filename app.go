@@ -210,6 +210,11 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		return
 	}
 
+	// TODO: Avoid this SELECT query
+	// I think it should be possible to specify that the username should be
+	// unique in SQL. Then, db.Exec("INSERT") would return an error or
+	// something, which I can check for
+
 	rows, err := db.Query("SELECT username FROM accounts WHERE username = ?", form_username)
 	handle(err)
 	defer rows.Close()
@@ -398,41 +403,26 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	// TODO: Return error if the user hasn't joined
 	// TODO: Use the URL argument for the game_id instead of hardcoding "0"
 
-	// First map user IDs to progress
-	user_ids := map[int]int{}
+	progress_set := map[string]int{}
 
-	rows, err := db.Query("SELECT user_id, progress FROM players WHERE game_id = ?", game_id)
+	rows, err := db.Query(`SELECT players.progress, accounts.username
+	                      FROM players
+	                      INNER JOIN accounts ON accounts.id = players.user_id
+	                      INNER JOIN games    ON games.id    = players.game_id
+	                      WHERE game_id = ?`, game_id)
 	handle(err)
 
 	for rows.Next() {
-		var user_id, progress int
-		err = rows.Scan(&user_id, &progress)
+		var progress int
+		var username string
+		err = rows.Scan(&progress, &username)
 
-		user_ids[user_id] = progress
+		progress_set[username] = progress
 	}
 	rows.Close()
 
-	// Get the usernames for those user IDs
-	usernames := map[string]int{}
-
-	for user_id, progress := range user_ids {
-
-		rows, err = db.Query("SELECT username FROM accounts WHERE id = ?", user_id)
-		handle(err)
-
-		if rows.Next() {
-			var username string
-			err = rows.Scan(&username)
-			handle(err)
-
-			usernames[username] = progress
-		}
-
-		rows.Close()
-	}
-
 	encoder := json.NewEncoder(writer)
-	encoder.Encode(usernames)
+	encoder.Encode(progress_set)
 }
 
 // API for the /play/ client to send requests to with AJAX
