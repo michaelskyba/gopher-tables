@@ -361,7 +361,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	// TODO: Return error if the user hasn't joined
 
 	progress := map[string]int{}
-	progress["Michael Skyba"] = 70
+	progress["Michael Skyba"] = 7
 	progress["Linus Torvalds"] = 2
 
 	encoder := json.NewEncoder(writer)
