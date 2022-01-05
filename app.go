@@ -53,6 +53,37 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 	http.Redirect(writer, request, path, http.StatusSeeOther)
 }
 
+// Add a player to a room
+func add_player(game_name, username string, db *sql.DB) {
+
+	// TODO: Don't let a player join if they're already in a room
+
+	var game_id, user_id int
+
+	// Find the game ID
+	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
+	handle(err)
+
+	if rows.Next() {
+		err = rows.Scan(&game_id)
+		handle(err)
+	}
+	rows.Close()
+
+	// Find user ID
+	rows, err = db.Query("SELECT id FROM accounts WHERE username = ?", username)
+	handle(err)
+
+	if rows.Next() {
+		err = rows.Scan(&user_id)
+		handle(err)
+	}
+	rows.Close()
+
+	_, err = db.Exec("INSERT INTO players (game_id, user_id) VALUES (?, ?)",
+		game_id, user_id)
+}
+
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
 	username := get_cookie(request, "username")
@@ -269,7 +300,8 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 // /join/<name>/, accessed when pressing "Join" on a game
 func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	if get_cookie(request, "username") == "" {
+	username := get_cookie(request, "username")
+	if username == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
@@ -298,11 +330,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		return
 	}
 
-	// TODO: Don't let a player join if they're already in a room
-
-	// TODO: Add the user to the players table to say that they have officially joined
-
-	// TODO: Redirect to /play/
+	add_player(game_name, username, db)
 
 	// TODO:
 	// Serve an HTML page with a password form if the game has a password
