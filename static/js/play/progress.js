@@ -2,7 +2,8 @@ const progress_url = `/progress/${game_id}/`
 
 let progress_request = new XMLHttpRequest()
 progress_request.onload = function() {
-	// console.log(this.status)
+
+	// TODO: Check for 200 (OK) status using this.status
 
 	let scores = JSON.parse(this.responseText)
 
@@ -20,15 +21,3 @@ let interval = setInterval(function() {
 	progress_request.send()
 
 }, 100)
-
-let answer_request = new XMLHttpRequest()
-
-document.onkeydown = function (e) {
-	e = e || window.event;
-
-	// Pressed Enter
-	if (e.keyCode == 13) {
-		answer_request.open("POST", "/answer/", true)
-		answer_request.send()
-	}
-}
