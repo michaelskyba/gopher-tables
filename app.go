@@ -53,10 +53,10 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 	http.Redirect(writer, request, path, http.StatusSeeOther)
 }
 
-// Add a player to a room
+// Add a player to a game
 func add_player(game_name, username string, db *sql.DB) {
 
-	// TODO: Don't let a player join if they're already in a room
+	// TODO: Don't let a player join if they're already in a game
 
 	var game_id, user_id int
 
@@ -334,7 +334,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// TODO:
 	// Serve an HTML page with a password form if the game has a password
-	// The password they input should be validated in a handler, maybe room_password_handler
+	// The password they input should be validated in a handler, maybe game_password_handler
 	// If the password is correct, it should be stored as a cookie and then the user
 	// should be redirected to /play/
 
@@ -352,7 +352,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// TODO:
 	// Validate the game password cookie the player has if
-	// this room is password-protected
+	// this game is password-protected
 
 	// play.html will be sending requests to /progress/ to see progress.
 	// It will need to send the game_id to /progress/, so we need to give that ID
@@ -372,7 +372,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		handle(err)
 	}
 
-	// TODO: Error if room doesn't exist
+	// TODO: Error if game doesn't exist
 
 	err = templates.ExecuteTemplate(writer, "play.html", game_id)
 	handle(err)
@@ -450,17 +450,17 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 
 	username := get_cookie(request, "username")
 	if username == "" {
-		set_cookie(writer, "message", "Error: You must be logged in to create a room")
+		set_cookie(writer, "message", "Error: You must be logged in to create a game")
 		redirect(writer, request, "/")
 	}
 
 	name := request.FormValue("name")
 	password := request.FormValue("password")
 
-	// Ensure standard-looking room names
+	// Ensure standard-looking game names
 	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
 	if !valid.MatchString(name) {
-		set_cookie(writer, "message", "Error: Your room's name must match '^[a-zA-Z0-9 _-]+$'.")
+		set_cookie(writer, "message", "Error: Your game's name must match '^[a-zA-Z0-9 _-]+$'.")
 		redirect(writer, request, "/create/")
 		return
 	}
@@ -470,7 +470,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		redirect(writer, request, "/create/")
 	}
 
-	// TODO: Check if room name already exists
+	// TODO: Check if game name already exists
 
 	_, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
 	handle(err)
