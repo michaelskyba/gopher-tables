@@ -37,9 +37,8 @@ CREATE TABLE players (
 	PRIMARY KEY (`id`)
 );
 
--- So Linus is joining the 'you are going to lose game'
--- Since he's the only player, he must have supposedly been the host
 INSERT INTO players
-	(game_id, user_id)
+	(game_id, user_id, progress)
 VALUES
-	(0, 1);
+	(0, 1, 7),
+	(0, 2, 5);

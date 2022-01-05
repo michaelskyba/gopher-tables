@@ -366,7 +366,6 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 
 	rows, err := db.Query("SELECT user_id, progress FROM players WHERE game_id = 0")
 	handle(err)
-	defer rows.Close()
 
 	for rows.Next() {
 		var user_id, progress int
@@ -374,15 +373,28 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 
 		user_ids[user_id] = progress
 	}
+	rows.Close()
 
-	fmt.Println(user_ids)
+	// Get the usernames for those user IDs
+	usernames := map[string]int{}
 
-	progress := map[string]int{}
-	progress["Michael Skyba"] = 7
-	progress["Linus Torvalds"] = 2
+	for user_id, progress := range user_ids {
+
+		rows, err = db.Query("SELECT username FROM accounts WHERE id = ?", user_id)
+		handle(err)
+
+		if rows.Next() {
+			var username string
+			err = rows.Scan(&username)
+
+			usernames[username] = progress
+		}
+
+		rows.Close()
+	}
 
 	encoder := json.NewEncoder(writer)
-	encoder.Encode(progress)
+	encoder.Encode(usernames)
 }
 
 // Create game form submission URL endpoint
