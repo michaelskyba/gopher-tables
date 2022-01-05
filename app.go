@@ -369,7 +369,8 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 // This will return the progress of the players so that the client can render them
 // Valid: /progress/game_id/
 func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-	// path := strings.Split(request.URL.Path, "/")
+	path := strings.Split(request.URL.Path, "/")
+	game_id := path[2]
 
 	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
 	// TODO: Return error if the user hasn't joined
@@ -378,7 +379,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	// First map user IDs to progress
 	user_ids := map[int]int{}
 
-	rows, err := db.Query("SELECT user_id, progress FROM players WHERE game_id = 0")
+	rows, err := db.Query("SELECT user_id, progress FROM players WHERE game_id = ?", game_id)
 	handle(err)
 
 	for rows.Next() {

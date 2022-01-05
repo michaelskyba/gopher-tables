@@ -1,4 +1,4 @@
-console.log(game_id)
+const progress_url = `/progress/${game_id}/`
 
 let xhr = new XMLHttpRequest()
 
@@ -17,7 +17,7 @@ xhr.onload = function() {
 
 // Constantly check for updates in score
 let interval = setInterval(function() {
-	xhr.open("GET", "/progress/", true)
+	xhr.open("GET", progress_url, true)
 	xhr.send()
 
 }, 100)
