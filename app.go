@@ -448,6 +448,12 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		return
 	}
 
+	username := get_cookie(request, "username")
+	if username == "" {
+		set_cookie(writer, "message", "Error: You must be logged in to create a room")
+		redirect(writer, request, "/")
+	}
+
 	name := request.FormValue("name")
 	password := request.FormValue("password")
 
