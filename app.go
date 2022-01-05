@@ -6,13 +6,13 @@ import (
 
 	"fmt"
 	"log"
-	"strings"
 	"regexp"
+	"strings"
 
-	"os"
-	"encoding/json"
 	"database/sql"
+	"encoding/json"
 	"github.com/go-sql-driver/mysql"
+	"os"
 )
 
 var templates = template.Must(template.ParseFiles(
@@ -24,18 +24,6 @@ var templates = template.Must(template.ParseFiles(
 	"html/lobby.html",
 	"html/play.html",
 	"html/create.html"))
-
-type account struct {
-	ID       int
-	username string
-	password string
-	wins     int
-}
-
-type profile struct {
-	Username string
-	Wins     int
-}
 
 func handle(err error) {
 	if err != nil {
@@ -68,7 +56,7 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 // Home page
 func home_handler(writer http.ResponseWriter, request *http.Request) {
 	username := get_cookie(request, "username")
-	message  := get_cookie(request, "message")
+	message := get_cookie(request, "message")
 
 	if request.URL.Path == "/" {
 		set_cookie(writer, "message", "")
@@ -76,7 +64,7 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 		template_input := struct {
 			Message  string
 			LoggedIn bool
-		} {
+		}{
 			message,
 			username != "",
 		}
@@ -94,7 +82,7 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	username := get_cookie(request, "username")
-	message  := get_cookie(request, "message")
+	message := get_cookie(request, "message")
 
 	if username != "" {
 		set_cookie(writer, "message", "You're already logged in.")
@@ -124,19 +112,22 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 		return
 	}
 
-	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
+	rows, err := db.Query("SELECT password FROM accounts WHERE username = ?", form_username)
 	handle(err)
 	defer rows.Close()
 
-	success := false
-	for rows.Next() {
-		var current account
-		err = rows.Scan(&current.ID, &current.username, &current.password, &current.wins)
+	success := true
+	if rows.Next() {
+		var password string
+		err = rows.Scan(&password)
 		handle(err)
 
-		if current.password == form_password {
-			success = true
+		if password != form_password {
+			success = false
 		}
+
+	} else {
+		success = false
 	}
 
 	if !success {
@@ -160,7 +151,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 	username := get_cookie(request, "username")
-	message  := get_cookie(request, "message")
+	message := get_cookie(request, "message")
 
 	if username != "" {
 		set_cookie(writer, "message", "You're already logged in.")
@@ -195,7 +186,7 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		return
 	}
 
-	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", form_username)
+	rows, err := db.Query("SELECT username FROM accounts WHERE username = ?", form_username)
 	handle(err)
 	defer rows.Close()
 	if rows.Next() {
@@ -228,14 +219,20 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 	// Find user's win count
 	// Breaks if the user injects a non-existent username as browser cookie
 
-	rows, err := db.Query("SELECT * FROM accounts WHERE username = ?", username)
+	rows, err := db.Query("SELECT wins FROM accounts WHERE username = ?", username)
 
-	var current account
-	rows.Next()
-	err = rows.Scan(&current.ID, &current.username, &current.password, &current.wins)
-	handle(err)
+	var wins int
+	if rows.Next() {
+		err = rows.Scan(&wins)
+		handle(err)
+	}
 
-	err = templates.ExecuteTemplate(writer, "profile.html", profile{username, current.wins})
+	type profile struct {
+		Username string
+		Wins     int
+	}
+
+	err = templates.ExecuteTemplate(writer, "profile.html", profile{username, wins})
 	handle(err)
 }
 
@@ -253,15 +250,13 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	}
 
 	// Get list of games from database
-	rows, err := db.Query("SELECT * FROM games")
+	rows, err := db.Query("SELECT name FROM games")
 	handle(err)
 	defer rows.Close()
 
 	for rows.Next() {
-		var name, password string
-		var id int
-
-		err = rows.Scan(&id, &name, &password)
+		var name string
+		err = rows.Scan(&name)
 		handle(err)
 
 		current.Games = append(current.Games, name)
@@ -286,16 +281,15 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		redirect(writer, request, "/")
 		return
 	}
+	var game_name = path[2]
 
 	// Get list of games from database
-	rows, err := db.Query("SELECT * FROM games WHERE name = ?", path[2])
+	rows, err := db.Query("SELECT password FROM games WHERE name = ?", game_name)
 	handle(err)
 	defer rows.Close()
 	if rows.Next() {
-		var name, password string
-		var id int
-
-		err = rows.Scan(&id, &name, &password)
+		var password string
+		err = rows.Scan(&password)
 		handle(err)
 
 	} else {
@@ -316,7 +310,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// If the password is correct, it should be stored as a cookie and then the user
 	// should be redirected to /play/
 
-	redirect(writer, request, fmt.Sprintf("/play/%v/", path[2]))
+	redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
 }
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
@@ -345,7 +339,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	handle(err)
 
 	var game_id int
-	if rows.Next () {
+	if rows.Next() {
 		err = rows.Scan(&game_id)
 		handle(err)
 	}
@@ -406,6 +400,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 		if rows.Next() {
 			var username string
 			err = rows.Scan(&username)
+			handle(err)
 
 			usernames[username] = progress
 		}
