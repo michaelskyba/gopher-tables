@@ -1,3 +1,5 @@
+console.log(game_id)
+
 let xhr = new XMLHttpRequest()
 
 xhr.onload = function() {

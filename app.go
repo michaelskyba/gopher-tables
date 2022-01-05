@@ -332,7 +332,27 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// Validate the game password cookie the player has if
 	// this room is password-protected
 
-	err := templates.ExecuteTemplate(writer, "play.html", nil)
+	// play.html will be sending requests to /progress/ to see progress.
+	// It will need to send the game_id to /progress/, so we need to give that ID
+	// to the client through a template value.
+
+	path := strings.Split(request.URL.Path, "/")
+
+	// TODO: Check for a valid URL path before querying database
+	// Valid: /play/game_name/
+
+	rows, err := db.Query("SELECT id FROM games WHERE name = ?", path[2])
+	handle(err)
+
+	var game_id int
+	if rows.Next () {
+		err = rows.Scan(&game_id)
+		handle(err)
+	}
+
+	// TODO: Error if room doesn't exist
+
+	err = templates.ExecuteTemplate(writer, "play.html", game_id)
 	handle(err)
 }
 
