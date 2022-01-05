@@ -353,12 +353,29 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 
 // API for the /play/ client to send requests to with AJAX
 // This will return the progress of the players so that the client can render them
-// Valid: /progress/game_name/
+// Valid: /progress/game_id/
 func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 	// path := strings.Split(request.URL.Path, "/")
 
 	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
 	// TODO: Return error if the user hasn't joined
+	// TODO: Use the URL argument for the game_id instead of hardcoding "0"
+
+	// First map user IDs to progress
+	user_ids := map[int]int{}
+
+	rows, err := db.Query("SELECT user_id, progress FROM players WHERE game_id = 0")
+	handle(err)
+	defer rows.Close()
+
+	for rows.Next() {
+		var user_id, progress int
+		err = rows.Scan(&user_id, &progress)
+
+		user_ids[user_id] = progress
+	}
+
+	fmt.Println(user_ids)
 
 	progress := map[string]int{}
 	progress["Michael Skyba"] = 7
