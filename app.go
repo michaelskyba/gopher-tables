@@ -475,7 +475,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	_, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
 	handle(err)
 
-	// TODO: Declare this player as having joined the game in the players database
+	add_player(name, username, db)
 
 	redirect(writer, request, fmt.Sprintf("/play/%v/", name))
 }
