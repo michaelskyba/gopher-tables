@@ -428,7 +428,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 // API for the /play/ client to send requests to with AJAX
 // This is used when answering questions - you submit your answer here to check if it
 // was right. If it was, your progress will be updated
-// Valid: /answer/your_answer_here/
+// Valid: /answer/game_id/your_answer_here/
 func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	// TODO: Return error if the URL is invalid

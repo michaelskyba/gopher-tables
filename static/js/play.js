@@ -1,8 +1,7 @@
 const progress_url = `/progress/${game_id}/`
 
-let xhr = new XMLHttpRequest()
-
-xhr.onload = function() {
+let progress_request = new XMLHttpRequest()
+progress_request.onload = function() {
 	// console.log(this.status)
 
 	let scores = JSON.parse(this.responseText)
@@ -17,7 +16,19 @@ xhr.onload = function() {
 
 // Constantly check for updates in score
 let interval = setInterval(function() {
-	xhr.open("GET", progress_url, true)
-	xhr.send()
+	progress_request.open("GET", progress_url, true)
+	progress_request.send()
 
 }, 100)
+
+let answer_request = new XMLHttpRequest()
+
+document.onkeydown = function (e) {
+	e = e || window.event;
+
+	// Pressed Enter
+	if (e.keyCode == 13) {
+		answer_request.open("POST", "/answer/", true)
+		answer_request.send()
+	}
+}
