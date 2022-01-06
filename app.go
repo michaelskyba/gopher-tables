@@ -53,10 +53,26 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 	http.Redirect(writer, request, path, http.StatusSeeOther)
 }
 
+// Check if a player is already in a game
+func is_already_in_game(username string, db *sql.DB) (bool, string) {
+	rows, err := db.Query(`SELECT games.name FROM games
+	                      INNER JOIN players  ON games.id    = players.game_id
+	                      INNER JOIN accounts ON accounts.id = players.user_id
+	                      WHERE accounts.username = ?`, username)
+	handle(err)
+
+	if rows.Next() {
+		var game_name string
+		rows.Scan(&game_name)
+
+		return true, game_name
+	}
+
+	return false, ""
+}
+
 // Add a player to a game
 func add_player(game_name, username string, db *sql.DB) {
-
-	// TODO: Don't let a player join if they're already in a game
 
 	// Find the game ID and user ID
 
@@ -321,7 +337,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	}
 	var game_name = path[2]
 
-	// Get list of games from database
+	// Make sure game exists and get password
 	rows, err := db.Query("SELECT password FROM games WHERE name = ?", game_name)
 	handle(err)
 	defer rows.Close()
@@ -336,7 +352,16 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		return
 	}
 
-	add_player(game_name, username, db)
+	yes, existing_name := is_already_in_game(username, db)
+	if yes && existing_name != game_name {
+		message := fmt.Sprintf("Error: You're already in a game ('%v')", existing_name)
+		set_cookie(writer, "message", message)
+
+		redirect(writer, request, "/")
+		return
+	}
+
+	// add_player(game_name, username, db)
 
 	// TODO:
 	// Serve an HTML page with a password form if the game has a password
@@ -495,6 +520,15 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	if len(name) > 15 {
 		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin")
 		redirect(writer, request, "/create/")
+	}
+
+	yes, existing_name := is_already_in_game(username, db)
+	if yes {
+		message := fmt.Sprintf("Error: You're already in a game ('%v')", existing_name)
+		set_cookie(writer, "message", message)
+
+		redirect(writer, request, "/create/")
+		return
 	}
 
 	// TODO: Check if game name already exists
