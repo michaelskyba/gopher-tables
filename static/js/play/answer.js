@@ -2,7 +2,15 @@ let answer_request = new XMLHttpRequest()
 let answer_input = document.getElementById("answer")
 
 // Initiate the game once both players have joined
-function intiate() {
+function initiate() {
+	let init_request = new XMLHttpRequest()
+	init_request.onload = function() {
+		document.getElementById("question").innerHTML = this.responseText
+		document.getElementById("submit").style.display = "block"
+	}
+
+	init_request.open("GET", `/init_question/${game_id}/`, true)
+	init_request.send()
 }
 
 document.onkeydown = function (e) {
@@ -13,7 +21,7 @@ document.onkeydown = function (e) {
 		let answer = answer_input.value
 		answer_input.value = ""
 
-		answer_request.open("POST", `/answer/${game_id}/${answer}/`, true)
+		answer_request.open("GET", `/answer/${game_id}/${answer}/`, true)
 		answer_request.send()
 	}
 }

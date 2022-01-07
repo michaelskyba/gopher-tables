@@ -432,6 +432,24 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	handle(err)
 }
 
+// Basically, a user creates a game and that user's progress is set to -1. /play/
+// renders the page and tells the client that the current question is "".
+// play.js knows that "" means that we're waiting for a player to join, so it says that.
+// Once a new player joins, we can start playing, so answer.js sends a request here, to
+// /init_question/. init_question_handler needs to set the player's progress to 0
+// and return the first question, which the user can now start to solve. The rest of
+// the questions are provided by /answer/ on correct answer submissions.
+//
+// This is the best way I can think of for fetching the first question in /play/...
+// We can't give the question to the client from the start or else
+// the host will have an advantage using a userscript.
+// You can argue that it doesn't matter because it's already possible to have
+// a userscript that solves multiplication for you, but that's different, since it
+// hijacks the core mechanic of the game instead of a specific implementation detail.
+func init_question_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	fmt.Fprintln(writer, "first question here")
+}
+
 // Create game page
 func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 
@@ -627,6 +645,9 @@ func main() {
 	})
 	http.HandleFunc("/play/", func(writer http.ResponseWriter, request *http.Request) {
 		play_handler(writer, request, db)
+	})
+	http.HandleFunc("/init_question/", func(writer http.ResponseWriter, request *http.Request) {
+		init_question_handler(writer, request, db)
 	})
 	http.HandleFunc("/progress/", func(writer http.ResponseWriter, request *http.Request) {
 		progress_handler(writer, request, db)

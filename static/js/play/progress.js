@@ -26,8 +26,8 @@ progress_request.onload = function() {
 
 		// We can start, since everyone has joined
 		if (i > 0 && started == false) {
-			console.log("Everyone has joined!")
 			started = true
+			initiate()
 		}
 	})
 }
