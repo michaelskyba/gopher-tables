@@ -374,7 +374,8 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	if get_cookie(request, "username") == "" {
+	username := get_cookie(request, "username")
+	if username == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 	}
@@ -406,12 +407,25 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// TODO: Error if game doesn't exist
 
+	var question string
+	rows, err = db.Query(`SELECT text FROM questions
+	                      INNER JOIN games    ON games.id    = questions.game_id
+	                      INNER JOIN players  ON games.id    = players.game_id
+	                      INNER JOIN accounts ON accounts.id = players.user_id
+	                      WHERE questions.progress = players.progress
+	                      AND accounts.username = ?`, username)
+	if rows.Next() {
+		rows.Scan(&question)
+	}
+
 	template_input := struct {
 		Name string
 		ID int
+		Question string
 	}{
 		game_name,
 		game_id,
+		question,
 	}
 
 	err = templates.ExecuteTemplate(writer, "play.html", template_input)
