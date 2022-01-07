@@ -5,10 +5,10 @@
 		<link href="/static/css/sakura.css" rel="stylesheet">
 		<link href="/static/css/play.css" rel="stylesheet">
 
-		<title>Play</title>
+		<title>{{.Name}}</title>
 	</head>
 	<body>
-		<h1>Play</h1>
+		<h1>Play: {{.Name}}</h1>
 
 		<a href="/" id="left">Home</a>
 		<a href="/profile/">My Profile</a>
@@ -33,7 +33,7 @@
 		</div>
 
 		<script>
-			const game_id = {{.}}
+			const game_id = {{.ID}}
 		</script>
 		<script src="/static/js/play/progress.js"></script>
 		<script src="/static/js/play/answer.js"></script>

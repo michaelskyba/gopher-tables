@@ -390,11 +390,12 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// to the client through a template value.
 
 	path := strings.Split(request.URL.Path, "/")
+	game_name := path[2]
 
 	// TODO: Check for a valid URL path before querying database
 	// Valid: /play/game_name/
 
-	rows, err := db.Query("SELECT id FROM games WHERE name = ?", path[2])
+	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
 	handle(err)
 
 	var game_id int
@@ -405,7 +406,15 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// TODO: Error if game doesn't exist
 
-	err = templates.ExecuteTemplate(writer, "play.html", game_id)
+	template_input := struct {
+		Name string
+		ID int
+	}{
+		game_name,
+		game_id,
+	}
+
+	err = templates.ExecuteTemplate(writer, "play.html", template_input)
 	handle(err)
 }
 
