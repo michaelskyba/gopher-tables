@@ -1,6 +1,10 @@
 let answer_request = new XMLHttpRequest()
 let answer_input = document.getElementById("answer")
 
+// Initiate the game once both players have joined
+function intiate() {
+}
+
 document.onkeydown = function (e) {
 	e = e || window.event
 

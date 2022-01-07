@@ -443,7 +443,6 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
 	// TODO: Return error if the user isn't signed in
 	// TODO: Return error if the user hasn't joined
-	// TODO: Use the URL argument for the game_id instead of hardcoding "0"
 
 	progress_set := map[string]int{}
 
@@ -542,8 +541,17 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 
 	// TODO: Check if game name already exists
 
-	_, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
+	result, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
 	handle(err)
+
+	game_id, err := result.LastInsertId()
+	handle(err)
+
+	for i := 1; i < 11; i++ {
+		_, err := db.Exec(`INSERT INTO questions (game_id, text, answer, progress)
+		                  VALUES (?, ?, ?, ?)`, game_id, fmt.Sprintf("1 × %v", i), i, i - 1)
+		handle(err)
+	}
 
 	add_player(name, username, db)
 
