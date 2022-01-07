@@ -361,7 +361,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		return
 	}
 
-	// add_player(game_name, username, db)
+	add_player(game_name, username, db)
 
 	// TODO:
 	// Serve an HTML page with a password form if the game has a password
