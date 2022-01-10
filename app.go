@@ -407,6 +407,8 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// TODO: Error if game doesn't exist
 
+	// If there's no question (i.e. progress == -1), this question variable
+	// will be "", which is accounted for by the client
 	var question string
 	rows, err = db.Query(`SELECT text FROM questions
 	                      INNER JOIN games    ON games.id    = questions.game_id
@@ -447,6 +449,23 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 // a userscript that solves multiplication for you, but that's different, since it
 // hijacks the core mechanic of the game instead of a specific implementation detail.
 func init_question_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+
+	// TODO: Make sure the player is logged in
+	// TODO: Make sure the player has joined a game
+	// TODO: Make sure the game has two players
+
+	// TODO: Ensure valid URL (/init_question/<game id>/)
+	// Now that I think about it, is providing the game ID useless if we're already
+	// going to be confirming it using the username cookie? At that point, we might
+	// as well just figure it out on the server side, right?
+
+	// Set progress to first real value "0" instead of -1
+	username := get_cookie(request, "username")
+	_, err   := db.Exec(`UPDATE players SET progress = 0
+	                    INNER JOIN accounts ON accounts.id = players.user_id
+	                    WHERE accounts.username = ?`, username)
+	handle(err)
+
 	fmt.Fprintln(writer, "first question here")
 }
 

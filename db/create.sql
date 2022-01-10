@@ -64,5 +64,4 @@ CREATE TABLE players (
 INSERT INTO players
 	(game_id, user_id, progress)
 VALUES
-	(1, 1, 7),
-	(1, 2, 5);
+	(1, 2, -1);
