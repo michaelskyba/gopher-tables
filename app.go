@@ -462,8 +462,9 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 
 	// Set progress to first real value "0" instead of -1
 	username := get_cookie(request, "username")
-	_, err   := db.Exec(`UPDATE players SET progress = 0
+	_, err   := db.Exec(`UPDATE players
 	                    INNER JOIN accounts ON accounts.id = players.user_id
+	                    SET players.progress = 0
 	                    WHERE accounts.username = ?`, username)
 	handle(err)
 
