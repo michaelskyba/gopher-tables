@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"time"
+
 	"fmt"
 	"log"
 	"regexp"
@@ -715,6 +717,24 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 	redirect(writer, request, "/")
 }
 
+// Delete games scheduled for deletion (either finished or AFK timeout)
+func game_delete_timer(db *sql.DB) {
+	for range time.Tick(time.Second * 10) {
+
+		rows, err := db.Query("SELECT delete_at FROM games")
+		handle(err)
+
+		current := time.Now().Unix()
+
+		for rows.Next() {
+			var end_at int
+			rows.Scan(&end_at)
+
+			fmt.Printf("%v vs %v\n", end_at, current)
+		}
+	}
+}
+
 func main() {
 	config := mysql.Config{
 		User:                 "michael",
@@ -772,6 +792,8 @@ func main() {
 		create_post_handler(writer, request, db)
 	})
 	http.HandleFunc("/logout/", logout_handler)
+
+	go game_delete_timer(db)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

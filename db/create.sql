@@ -22,13 +22,14 @@ CREATE TABLE games (
 	id			INT AUTO_INCREMENT NOT NULL,
 	name		VARCHAR(128) NOT NULL,
 	password	VARCHAR(128) NOT NULL,
+	delete_at	INT NOT NULL,
 	PRIMARY KEY (`id`)
 );
 
 INSERT INTO games
-	(name, password)
+	(name, password, delete_at)
 VALUES
-	('you are going to lose', '');
+	('you are going to lose', '', 1852000000);
 
 CREATE TABLE questions (
 	id			INT AUTO_INCREMENT NOT NULL,
