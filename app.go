@@ -583,7 +583,20 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		                  progress + 1, user_id)
 		handle(err)
 
-		fmt.Fprintln(writer, "TODO: Next question")
+		// Return next question
+
+		rows, err := db.Query(`SELECT text FROM questions
+		                      INNER JOIN games    ON games.id    = questions.game_id
+		                      INNER JOIN players  ON games.id    = players.game_id
+		                      WHERE questions.progress = ?
+		                      AND players.user_id = ?`, progress + 1, user_id)
+		handle(err)
+
+		var question string
+		if rows.Next() {
+			rows.Scan(&question)
+		}
+		fmt.Fprintln(writer, question)
 
 	} else {
 		fmt.Fprintln(writer, "incorrect")

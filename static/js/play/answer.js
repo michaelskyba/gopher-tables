@@ -31,8 +31,6 @@ answer_request.onload = function() {
 	}
 
 	else {
-		console.log(this.responseText)
-		console.log(this.responseText == "incorrect")
 		wrong_streak = 0
 		document.getElementById("answer").placeholder = original_placeholder
 		document.getElementById("question").innerHTML = this.responseText
