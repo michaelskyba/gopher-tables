@@ -554,13 +554,19 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 	// TODO: Return error if the user isn't signed in
 
 	username := get_cookie(request, "username")
-	answer_input, err := strconv.Atoi(strings.Split(request.URL.Path, "/")[2])
+
+	path := strings.Split(request.URL.Path, "/")
+	answer_input, err := strconv.Atoi(path[2])
 
 	// Bastard sent a string
 	if err != nil {
 		fmt.Fprintln(writer, "incorrect")
 		return
 	}
+
+	// TODO: Return error if a player is at > 9 progress (game is over)
+	// Just in case someone figures out how to get a > 10 score, maybe by abusing
+	// race conditions
 
 	// Find user ID, progress, and correct answer
 	var user_id, progress, answer int
@@ -579,9 +585,45 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 	}
 
 	if answer_input == answer {
+
 		_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
 		                  progress + 1, user_id)
 		handle(err)
+
+		// The player won
+		// It's > 8 and not > 9 because we haven't updated the progress variable
+		// and instead use progress + 1 when talking to SQL
+		if progress > 8 {
+
+			// TODO: We need some way of deleting games periodically
+			//
+			// When a game is finished, it should be deleted ~1 minute after.
+			// This gives both clients enough time to render the win screen.
+			// Games should also be deleted one hour after they are created
+			// if no progress is made by either player. The countdown should reset
+			// if either player makes progress. This would combat AFK players or
+			// players who create a game and then log off without punishing anybody
+			// who has to leave for a short time.
+			//
+			// This could be implemented as a timer and a new field in the games
+			// table called "delete_at" or something. This new field would hold the
+			// epoch time at which the game should be deleted. Then, every minute,
+			// the timer function will delete every game from the games table which
+			// has a "delete_at" field of less than the current epoch time.
+			//
+			// To implement this timer, use the time library
+			// https://stackoverflow.com/a/35228972
+			//
+			// The default value for delete_at should be (current epoch) + 3600 (1h),
+			// as I said. answer_handler should add 3600 to the game's delete_at field
+			// every time a player gets an answer correct. This would be done after
+			// checking to make sure the game isn't over yet (i.e. one of the players
+			// is at a score of > 9) so that the game wouldn't be able to run forever.
+			// answer_handler would set the time to (current epoch) + 60 (1m) when a
+			// player gets > 9 score (in this if statement).
+
+			return
+		}
 
 		// Return next question
 
