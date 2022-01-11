@@ -555,7 +555,12 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 
 	username := get_cookie(request, "username")
 	answer_input, err := strconv.Atoi(strings.Split(request.URL.Path, "/")[2])
-	handle(err)
+
+	// Bastard sent a string
+	if err != nil {
+		fmt.Fprintln(writer, "incorrect")
+		return
+	}
 
 	// Find user ID, progress, and correct answer
 	var user_id, progress, answer int

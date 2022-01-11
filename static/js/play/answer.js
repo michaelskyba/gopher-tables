@@ -1,5 +1,9 @@
 let answer_request = new XMLHttpRequest()
 let answer_input = document.getElementById("answer")
+let wrong_streak = 0
+let original_placeholder = document.getElementById("answer").placeholder
+
+// TODO: Check for 200 (OK) status using this.status in XMLHttpRequest .onloads
 
 // Initiate the game once both players have joined
 function initiate() {
@@ -11,6 +15,28 @@ function initiate() {
 
 	init_request.open("GET", `/init_question/`, true)
 	init_request.send()
+}
+
+// After submitting an answer and receiving a response from /answer/
+answer_request.onload = function() {
+
+	if (this.responseText.trim() == "incorrect") {
+		wrong_streak++
+
+		let placeholder = "Incorrect answer"
+		if (wrong_streak > 1) {
+			placeholder = `${placeholder} (x${wrong_streak})`
+		}
+		document.getElementById("answer").placeholder = placeholder
+	}
+
+	else {
+		console.log(this.responseText)
+		console.log(this.responseText == "incorrect")
+		wrong_streak = 0
+		document.getElementById("answer").placeholder = original_placeholder
+		document.getElementById("question").innerHTML = this.responseText
+	}
 }
 
 document.onkeydown = function (e) {
