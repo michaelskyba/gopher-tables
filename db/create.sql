@@ -42,7 +42,7 @@ CREATE TABLE questions (
 INSERT INTO questions
 	(game_id, text, answer, progress)
 VALUES
-	(1, '1 × 1 + 1 - 1 test', 1, 0),
+	(1, '1 × 1', 1, 0),
 	(1, '1 × 2', 2, 1),
 	(1, '1 × 3', 3, 2),
 	(1, '1 × 4', 4, 3),
@@ -64,4 +64,5 @@ CREATE TABLE players (
 INSERT INTO players
 	(game_id, user_id, progress)
 VALUES
-	(1, 2, -1);
+	(1, 1, 7),
+	(1, 2, 5);

@@ -9,7 +9,7 @@ function initiate() {
 		document.getElementById("submit").style.display = "block"
 	}
 
-	init_request.open("GET", `/init_question/${game_id}/`, true)
+	init_request.open("GET", `/init_question/`, true)
 	init_request.send()
 }
 
@@ -21,7 +21,7 @@ document.onkeydown = function (e) {
 		let answer = answer_input.value
 		answer_input.value = ""
 
-		answer_request.open("GET", `/answer/${game_id}/${answer}/`, true)
+		answer_request.open("GET", `/answer/${answer}/`, true)
 		answer_request.send()
 	}
 }
