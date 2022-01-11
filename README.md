@@ -30,7 +30,7 @@ Create the tables:
 ```sh
 git clone https://github.com/michaelskyba/gopher-tables
 cd gopher-tables
-mysql -u michael -p # use "password" as the password
+mysql -u michael -p db --password=password
 ```
 ```
 source db/create_tables.sql
