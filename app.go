@@ -392,11 +392,14 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// It will need to send the game_id to /progress/, so we need to give that ID
 	// to the client through a template value.
 
+	// We want the trailing slash, so 3, not 2
 	path := strings.Split(request.URL.Path, "/")
-	game_name := path[2]
+	if len(path) < 3 {
+		set_cookie(writer, "message", "Error: Visit the lobby to join a game")
+		redirect(writer, request, "/")
+	}
 
-	// TODO: Check for a valid URL path before querying database
-	// Valid: /play/game_name/
+	game_name := path[2]
 
 	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
 	handle(err)
@@ -513,6 +516,10 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	// TODO: Return error if the URL is invalid (e.g. localhost:8000/progress/)
 	// TODO: Return error if the user isn't signed in
 	// TODO: Return error if the user hasn't joined
+
+	// TODO: Use game associated with username cookie instead of a URL argument
+	// Why? Well, we have to query the database either way to see if they
+	// have joined, so it makes no sense to pass around a game ID on top of that
 
 	progress_set := map[string]int{}
 
