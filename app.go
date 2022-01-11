@@ -8,6 +8,7 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"strconv"
 
 	"database/sql"
 	"encoding/json"
@@ -547,27 +548,36 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 
 	username := "Michael Skyba"
 
-	// Find user ID and progress
-	var user_id, progress int
-	rows, err := db.Query(`SELECT accounts.id, players.progress
+	path := strings.Split(request.URL.Path, "/")
+	answer_input, err := strconv.Atoi(path[2])
+	handle(err)
+
+	// Find user ID, progress, and correct answer
+	var user_id, progress, answer int
+	rows, err := db.Query(`SELECT accounts.id, players.progress, questions.answer
 	                     FROM accounts
-		                 INNER JOIN players ON accounts.id = players.user_id
-	                     WHERE accounts.username = ?`, username)
+		                 INNER JOIN players   ON accounts.id = players.user_id
+		                 INNER JOIN games     ON games.id    = players.game_id
+		                 INNER JOIN questions ON games.id    = questions.game_id
+	                     WHERE players.progress = questions.progress
+	                     AND accounts.username = ?`, username)
 	handle(err)
 
 	if rows.Next() {
-		err = rows.Scan(&user_id, &progress)
+		err = rows.Scan(&user_id, &progress, &answer)
 		handle(err)
 	}
-	progress++
 
-	if progress == 10 {
-		fmt.Fprintln(writer, "Game over!")
+	if answer_input == answer {
+		_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
+		                  progress + 1, user_id)
+		handle(err)
+
+		fmt.Fprintln(writer, "TODO: Next question")
+
+	} else {
+		fmt.Fprintln(writer, "incorrect")
 	}
-
-	_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
-	                  progress, user_id)
-	handle(err)
 }
 
 // Create game form submission URL endpoint
