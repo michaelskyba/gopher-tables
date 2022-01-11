@@ -553,10 +553,8 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 
 	// TODO: Return error if the user isn't signed in
 
-	username := "Michael Skyba"
-
-	path := strings.Split(request.URL.Path, "/")
-	answer_input, err := strconv.Atoi(path[2])
+	username := get_cookie(request, "username")
+	answer_input, err := strconv.Atoi(strings.Split(request.URL.Path, "/")[2])
 	handle(err)
 
 	// Find user ID, progress, and correct answer
