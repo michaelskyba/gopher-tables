@@ -459,16 +459,32 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 	// Now that I think about it, is providing the game ID useless if we're already
 	// going to be confirming it using the username cookie? At that point, we might
 	// as well just figure it out on the server side, right?
+	// Yeah, it /is/ useless. Get rid of game_id as an argument (same with /progress/).
+
+	username := get_cookie(request, "username")
 
 	// Set progress to first real value "0" instead of -1
-	username := get_cookie(request, "username")
 	_, err   := db.Exec(`UPDATE players
 	                    INNER JOIN accounts ON accounts.id = players.user_id
 	                    SET players.progress = 0
 	                    WHERE accounts.username = ?`, username)
 	handle(err)
 
-	fmt.Fprintln(writer, "first question here")
+	// Display first question
+	rows, err := db.Query(`SELECT text FROM questions
+	                      INNER JOIN games    ON games.id    = questions.game_id
+	                      INNER JOIN players  ON games.id    = players.game_id
+	                      INNER JOIN accounts ON accounts.id = players.user_id
+	                      WHERE questions.progress = 0
+	                      AND   accounts.username  = ?`, username)
+	handle(err)
+
+	if rows.Next() {
+		var question string
+		rows.Scan(&question)
+
+		fmt.Fprintln(writer, question)
+	}
 }
 
 // Create game page
