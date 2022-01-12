@@ -25,6 +25,7 @@ var templates = template.Must(template.ParseFiles(
 	"html/register.html",
 	"html/profile.html",
 	"html/lobby.html",
+	"html/password.html",
 	"html/play.html",
 	"html/create.html"))
 
@@ -361,6 +362,44 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		return
 	}
 
+	if password != "" {
+
+		template_input := struct {
+			Name string
+			Message string
+		}{
+			game_name,
+			"",
+		}
+
+		// TODO: Hash passwords in /create_post/ and compare hashes here
+
+		// User just clicked "join" on /lobby/
+		if request.Method != http.MethodPost {
+			err := templates.ExecuteTemplate(writer, "password.html", template_input)
+			handle(err)
+
+			return
+
+		// Wrong password
+		} else if request.FormValue("password") != password {
+
+			// TODO: Use the message cookie and a redirect() on a POST
+			// submission instead of rendering a template on POST. This makes
+			// it so the user can reload the page and have the message cleared
+			// without seeing a re-submit form prompt, but it's also just cleaner.
+
+			template_input.Message = "Error: Incorrect password"
+
+			err := templates.ExecuteTemplate(writer, "password.html", template_input)
+			handle(err)
+
+			return
+		}
+
+		// They have the correct password, so we just proceed as usual
+	}
+
 	yes, existing_name := is_already_in_game(username, db)
 	if yes && existing_name != game_name {
 		message := fmt.Sprintf("Error: You're already in a game ('%v')", existing_name)
@@ -372,12 +411,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	} else if existing_name != game_name {
 		add_player(game_name, username, db)
 	}
-
-	// TODO:
-	// Serve an HTML page with a password form if the game has a password
-	// The password they input should be validated in a handler, maybe game_password_handler
-	// If the password is correct, it should be stored as a cookie and then the user
-	// should be redirected to /play/
 
 	redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
 }
