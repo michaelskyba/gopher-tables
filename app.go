@@ -647,6 +647,20 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 			// answer_handler would set the time to (current epoch) + 60 (1m) when a
 			// player gets > 9 score (in this if statement).
 
+			// Delete the current game in seven seconds
+			// It can't be too long because players might want to immediately join
+			// or create a new game after they have finished playing this one. If
+			// it hasn't been deleted, they won't be able to join yet, which would
+			// be annoying. If it's too short, some sort of connection lag on either
+			// side could make the client accidentally skip the win message.
+			// In reality, the time will be 7-10 seconds since the delete timer
+			// runs every ten seconds.
+			delete_at := time.Now().Unix() + 7
+			_, err = db.Exec(`UPDATE games
+			                 INNER JOIN players ON games.id = players.game_id
+			                 SET games.delete_at = ?
+			                 WHERE players.user_id = ?`, delete_at, user_id)
+
 			return
 		}
 
@@ -745,7 +759,7 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Delete games scheduled for deletion (either finished or AFK timeout)
 func game_delete_timer(db *sql.DB) {
-	for range time.Tick(time.Second * 60) {
+	for range time.Tick(time.Second * 10) {
 
 		current := time.Now().Unix()
 

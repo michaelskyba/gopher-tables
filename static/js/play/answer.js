@@ -8,7 +8,7 @@ let original_placeholder = document.getElementById("answer").placeholder
 // Initiate the game once both players have joined
 function initiate() {
 	let init_request = new XMLHttpRequest()
-	int_request.onerror = function(){location.reload()}
+	init_request.onerror = function(){location.reload()}
 	init_request.onload = function() {
 		document.getElementById("question").innerHTML = this.responseText
 		document.getElementById("submit").style.display = "block"
