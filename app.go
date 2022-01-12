@@ -99,6 +99,9 @@ func add_player(game_name, username string, db *sql.DB) {
 	}
 	rows.Close()
 
+	_, err = db.Exec("UPDATE players SET progress = -1 WHERE user_id = ?", user_id)
+	handle(err)
+
 	_, err = db.Exec("INSERT INTO players (game_id, user_id) VALUES (?, ?)",
 		game_id, user_id)
 	handle(err)
