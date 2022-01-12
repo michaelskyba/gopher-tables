@@ -26,11 +26,6 @@ CREATE TABLE games (
 	PRIMARY KEY (`id`)
 );
 
-INSERT INTO games
-	(name, password, delete_at)
-VALUES
-	('you are going to lose', '', 1852000000);
-
 CREATE TABLE questions (
 	id			INT AUTO_INCREMENT NOT NULL,
 	game_id		INT NOT NULL,
@@ -40,20 +35,6 @@ CREATE TABLE questions (
 	PRIMARY KEY (`id`)
 );
 
-INSERT INTO questions
-	(game_id, text, answer, progress)
-VALUES
-	(1, '1 × 1', 1, 0),
-	(1, '1 × 2', 2, 1),
-	(1, '1 × 3', 3, 2),
-	(1, '1 × 4', 4, 3),
-	(1, '1 × 5', 5, 4),
-	(1, '1 × 6', 6, 5),
-	(1, '1 × 7', 7, 6),
-	(1, '1 × 8', 8, 7),
-	(1, '1 × 9', 9, 8),
-	(1, '1 × 10', 10, 9);
-
 CREATE TABLE players (
 	id			INT AUTO_INCREMENT NOT NULL,
 	game_id		INT NOT NULL,
@@ -61,9 +42,3 @@ CREATE TABLE players (
 	progress	INT DEFAULT -1,
 	PRIMARY KEY (`id`)
 );
-
-INSERT INTO players
-	(game_id, user_id, progress)
-VALUES
-	(1, 1, 7),
-	(1, 2, 5);

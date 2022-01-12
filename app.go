@@ -747,17 +747,10 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 func game_delete_timer(db *sql.DB) {
 	for range time.Tick(time.Second * 60) {
 
-		rows, err := db.Query("SELECT delete_at FROM games")
-		handle(err)
-
 		current := time.Now().Unix()
 
-		for rows.Next() {
-			var end_at int
-			rows.Scan(&end_at)
-
-			fmt.Printf("%v vs %v\n", end_at, current)
-		}
+		_, err := db.Exec("DELETE FROM games WHERE delete_at < ?", current)
+		handle(err)
 	}
 }
 
