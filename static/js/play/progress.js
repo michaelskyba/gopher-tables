@@ -21,13 +21,23 @@ progress_request.onload = function() {
 	// I'm assuming the order will be the same every time
 	// If not, I'll have to sort alphabetically to keep the locations consistent
 	Object.keys(scores).forEach((name, i) => {
+
+		let score = scores[name]
+
 		document.getElementById(`name_${i}`).innerHTML = name
-		document.getElementById(`progress_${i}`).value = scores[name]
+		document.getElementById(`progress_${i}`).value = score
 
 		// We can start, since everyone has joined
 		if (i > 0 && started == false) {
 			started = true
 			initiate()
+		}
+
+		// Somebody won, so the game is over
+		if (score > 9) {
+			document.getElementById("question").innerHTML = `${name} is the winner!`
+			document.getElementById("submit").style.display = "none"
+			clearInterval(interval)
 		}
 	})
 }

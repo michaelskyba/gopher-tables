@@ -719,7 +719,7 @@ func logout_handler(writer http.ResponseWriter, request *http.Request) {
 
 // Delete games scheduled for deletion (either finished or AFK timeout)
 func game_delete_timer(db *sql.DB) {
-	for range time.Tick(time.Second * 10) {
+	for range time.Tick(time.Second * 60) {
 
 		rows, err := db.Query("SELECT delete_at FROM games")
 		handle(err)
