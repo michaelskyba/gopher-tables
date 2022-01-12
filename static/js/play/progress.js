@@ -12,9 +12,8 @@ else {
 const progress_url = `/progress/${game_id}/`
 
 let progress_request = new XMLHttpRequest()
+progress_request.onerror = function(){location.reload()}
 progress_request.onload = function() {
-
-	// TODO: Check for 200 (OK) status using this.status
 
 	let scores = JSON.parse(this.responseText)
 

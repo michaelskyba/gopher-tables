@@ -1,13 +1,14 @@
 let answer_request = new XMLHttpRequest()
+answer_request.onerror = function(){location.reload()}
+
 let answer_input = document.getElementById("answer")
 let wrong_streak = 0
 let original_placeholder = document.getElementById("answer").placeholder
 
-// TODO: Check for 200 (OK) status using this.status in XMLHttpRequest .onloads
-
 // Initiate the game once both players have joined
 function initiate() {
 	let init_request = new XMLHttpRequest()
+	int_request.onerror = function(){location.reload()}
 	init_request.onload = function() {
 		document.getElementById("question").innerHTML = this.responseText
 		document.getElementById("submit").style.display = "block"
