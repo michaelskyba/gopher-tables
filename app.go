@@ -589,9 +589,9 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		return
 	}
 
-	// TODO: Return error if a player is at > 9 progress (game is over)
-	// Just in case someone figures out how to get a > 10 score, maybe by abusing
-	// race conditions
+	// TODO: Return error if any player is at > 9 progress (game is over)
+	// > 9 instead of = 10 just in case someone figures out how to get a > 10 score,
+	// maybe by abusing race conditions
 
 	// Find user ID, progress, and correct answer
 	var user_id, progress, answer int
@@ -710,12 +710,15 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 
 	// TODO: Check if game name already exists
 
-	result, err := db.Exec("INSERT INTO games (name, password) VALUES (?, ?)", name, password)
+	delete_at := int(time.Now().Unix()) + 3600
+	result, err := db.Exec("INSERT INTO games (name, password, delete_at) VALUES (?, ?, ?)",
+	                       name, password, delete_at)
 	handle(err)
 
 	game_id, err := result.LastInsertId()
 	handle(err)
 
+	// TODO: Generate legitimate questions instead of 1 * (1-10)
 	for i := 1; i < 11; i++ {
 		_, err := db.Exec(`INSERT INTO questions (game_id, text, answer, progress)
 		                  VALUES (?, ?, ?, ?)`, game_id, fmt.Sprintf("1 × %v", i), i, i - 1)
