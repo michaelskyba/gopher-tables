@@ -414,6 +414,29 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// TODO: Error if game doesn't exist
 
+	// Don't send an empty string if the player has won
+	rows, err = db.Query(`SELECT players.progress FROM players
+	                     INNER JOIN accounts ON accounts.id = players.user_id
+	                     WHERE players.progress > 9
+	                     AND accounts.username = ?`, username)
+	handle(err)
+
+	if rows.Next() {
+		template_input := struct {
+			Name string
+			ID int
+			Question string
+		}{
+			game_name,
+			game_id,
+			"winner",
+		}
+
+		err = templates.ExecuteTemplate(writer, "play.html", template_input)
+		handle(err)
+		return
+	}
+
 	// If there's no question (i.e. progress == -1), this question variable
 	// will be "", which is accounted for by the client
 	var question string
