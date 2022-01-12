@@ -66,7 +66,8 @@ func is_already_in_game(username string, db *sql.DB) (bool, string) {
 
 	if rows.Next() {
 		var game_name string
-		rows.Scan(&game_name)
+		err = rows.Scan(&game_name)
+		handle(err)
 
 		return true, game_name
 	}
@@ -195,6 +196,8 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	// Then, when checking their username, check this pair.
 	// This would prevent people from impersonating someone by adding their
 	// username as their 'username' cookie manually.
+	// An exception might be for /progress/ if it's slowing down the response
+	// speed significantly, because /progress/ needs to be called rapidly.
 
 	set_cookie(writer, "username", form_username)
 	set_cookie(writer, "message", "You have successfully logged in.")
@@ -344,11 +347,11 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	var game_name = path[2]
 
 	// Make sure game exists and get password
+	var password string
 	rows, err := db.Query("SELECT password FROM games WHERE name = ?", game_name)
 	handle(err)
 	defer rows.Close()
 	if rows.Next() {
-		var password string
 		err = rows.Scan(&password)
 		handle(err)
 
@@ -450,7 +453,8 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	                      WHERE questions.progress = players.progress
 	                      AND accounts.username = ?`, username)
 	if rows.Next() {
-		rows.Scan(&question)
+		err = rows.Scan(&question)
+		handle(err)
 	}
 
 	template_input := struct {
@@ -513,7 +517,8 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 
 	if rows.Next() {
 		var question string
-		rows.Scan(&question)
+		err = rows.Scan(&question)
+		handle(err)
 
 		fmt.Fprintln(writer, question)
 	}
@@ -664,6 +669,8 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 			                 SET games.delete_at = ?
 			                 WHERE players.user_id = ?`, delete_at, user_id)
 
+			// TODO: Increment the account's number of wins
+
 			return
 		}
 
@@ -678,7 +685,8 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 
 		var question string
 		if rows.Next() {
-			rows.Scan(&question)
+			err = rows.Scan(&question)
+			handle(err)
 		}
 		fmt.Fprintln(writer, question)
 
