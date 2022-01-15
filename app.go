@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"time"
+	"math/rand"
 
 	"fmt"
 	"log"
@@ -361,6 +362,8 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		redirect(writer, request, "/")
 		return
 	}
+
+	// TODO: Don't require a password if you've already joined the game
 
 	if password != "" {
 
@@ -776,10 +779,13 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	game_id, err := result.LastInsertId()
 	handle(err)
 
-	// TODO: Generate legitimate questions instead of 1 * (1-10)
-	for i := 1; i < 11; i++ {
+	for i := 0; i < 10; i++ {
+		a := rand.Intn(12) + 1 // 1 to 12
+		b := rand.Intn(12) + 1 // 1 to 12
+
 		_, err := db.Exec(`INSERT INTO questions (game_id, text, answer, progress)
-		                  VALUES (?, ?, ?, ?)`, game_id, fmt.Sprintf("1 × %v", i), i, i - 1)
+		                  VALUES (?, ?, ?, ?)`, game_id, fmt.Sprintf("%v × %v", a, b),
+		                  a * b, i)
 		handle(err)
 	}
 
