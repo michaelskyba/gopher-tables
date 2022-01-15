@@ -664,6 +664,9 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		// and instead use progress + 1 when talking to SQL
 		if progress > 8 {
 
+			_, err = db.Exec("UPDATE accounts SET wins = wins + 1 WHERE id = ?", user_id)
+			handle(err)
+
 			// TODO: We need some way of deleting games periodically
 			//
 			// When a game is finished, it should be deleted ~1 minute after.
@@ -704,8 +707,7 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 			                 INNER JOIN players ON games.id = players.game_id
 			                 SET games.delete_at = ?
 			                 WHERE players.user_id = ?`, delete_at, user_id)
-
-			// TODO: Increment the account's number of wins
+			handle(err)
 
 			return
 		}
