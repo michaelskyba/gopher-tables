@@ -1,13 +1,14 @@
 # Gopher Tables
 Gopher Tables is an online multiplayer "race" game. Players join a game 
-together, and then they race to answer multiplication exercises as fast as 
+together and then race to answer multiplication exercises as fast as
 possible.
 
 The backend is written in Go, using the ``net/http`` package. There's no
 frontend framework, only [sakura.css](https://github.com/oxalorg/sakura) for
 styling. Gopher Tables was created as a school project, meant for learning Go.
 
-Current status: it's unplayable but I'm actively working on it
+Current status: it's playable but has quite a few possible issues, especially
+if a knowledgeable user wanted to break it
 
 ## Database setup
 ```sh
@@ -33,7 +34,7 @@ cd gopher-tables
 mysql -u michael -p db --password=password
 ```
 ```
-source db/create_tables.sql
+source db/create.sql
 select * from accounts;
 quit
 ```
