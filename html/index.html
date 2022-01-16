@@ -5,9 +5,18 @@
 		<link href="/static/css/sakura.css" rel="stylesheet">
 
 		<title>Gopher Tables</title>
+		<style>
+			img {
+				margin: auto;
+				margin-top: 30px;
+				margin-bottom: 0;
+				width: 400px;
+				display: block;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Welcome to Gopher Tables</h1>
+		<h1>Gopher Tables</h1>
 
 		<a href="/" id="left">Home</a>
 		{{if .LoggedIn}}
@@ -23,5 +32,35 @@
 			<blockquote>{{.Message}}</blockquote>
 		{{end}}
 
+		<img src="/static/img/tables.png" alt="Gopher Tables logo">
+
+		<p>Gopher Tables is an innovative platform for practicing very simple
+		multiplication. The conventional method, rote memorization, lacks any element
+		of engagement. Gopher Tables, on the other hand, introduces competition to
+		gamify the activity.</p>
+
+		<p>You are seeing this page because your browser sent a GET request to the "/"
+		URL endpoint. The server, app.go, heard your request and knew that it was sent
+		to "/" and so it sent back index.html, this page, as a response. The image
+		above is taken from /static/, which is served statically using
+		<code>http.FileServer</code>. All other static files (CSS and JavaScript) also
+		come from /static/.</p>
+
+		<p>This home page will look different depending on certain user-controlled
+		factors. The links in the navigation bar will change if you sign in or out,
+		because certain pages are only intended to be viewed by signed-in users and
+		others are only intended to be viewed by signed-out users. The second variable
+		is that you may see an alert, meant to notify you about a certain event, such
+		as the fact that you have successfully registered.</p>
+
+		<p>If you look at the raw HTML that you'e been served, you will see no evidence
+		of any option except for your own, so what's going on? It should be clear that
+		index.html is not served statically. That is, it uses a "template", where the
+		server's internal values create differences in the HTML.
+
+		<p>Specifically, it checks whether you're logged in and then checks for an
+		alert message using the message cookie, giving these variables to the template
+		for processing. If you try injecting an arbitrary message as a "message" cookie
+		and then refreshing this page, you should see a corresponding alert box.</p>
 	</body>
 </html>
