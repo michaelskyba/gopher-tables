@@ -22,5 +22,22 @@
 			<input name="password" type="password" placeholder="Password">
 			<input type="submit" value="Log in">
 		</form>
+
+		<p>This form sends your attempted credentials to /login_post/ as a POST request.
+		The server uses <code>request.FormValue(...)</code> to access these fields and
+		then queries the "accounts" SQL table for a match. The password is first
+		hashed before querying, because the plaintext wouldn't match with the hashed version,
+		which the database holds.</p>
+
+		<p>On a successful match, your credentials are cached as cookies and you are
+		redirected to "/". If there's no match, meaning that your credentials are
+		wrong, you are redirected back to /login/ to try again, where you will see the
+		cached "unsuccess" alert.</p>
+
+		<p>This page, login.html, along with register.html, are only visible because
+		you are logged out. When your browser made the request to /login/, the
+		server checked for the relevant cookies in the request and found none, so
+		it was able to correctly serve the Log In page. If you were signed in, you
+		would have been redirected to "/" using <code>http.Redirect(...)</code>.</p>
 	</body>
 </html>
