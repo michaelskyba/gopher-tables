@@ -245,24 +245,14 @@ func register_post_handler(writer http.ResponseWriter, request *http.Request, db
 		return
 	}
 
-	// TODO: Avoid this SELECT query
-	// I think it should be possible to specify that the username should be
-	// unique in SQL. Then, db.Exec("INSERT") would return an error or
-	// something, which I can check for
+	// TODO: Hash password instead of storing in plaintext
 
-	rows, err := db.Query("SELECT username FROM accounts WHERE username = ?", form_username)
-	handle(err)
-	defer rows.Close()
-	if rows.Next() {
+	_, err := db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", form_username, form_password)
+	if err != nil {
 		set_cookie(writer, "message", "Error: That username is taken.")
 		redirect(writer, request, "/register/")
 		return
 	}
-
-	// TODO: Hash password instead of storing in plaintext
-
-	_, err = db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", form_username, form_password)
-	handle(err)
 
 	// Log in
 	set_cookie(writer, "username", form_username)
@@ -771,12 +761,15 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		return
 	}
 
-	// TODO: Check if game name already exists
-
 	delete_at := int(time.Now().Unix()) + 3600
 	result, err := db.Exec("INSERT INTO games (name, password, delete_at) VALUES (?, ?, ?)",
 	                       name, password, delete_at)
-	handle(err)
+
+	if err != nil {
+		set_cookie(writer, "message", "Error: Game already exists")
+		redirect(writer, request, "/create/")
+		return
+	}
 
 	game_id, err := result.LastInsertId()
 	handle(err)

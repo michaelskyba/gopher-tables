@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS players;
 
 CREATE TABLE accounts (
 	id			INT AUTO_INCREMENT NOT NULL,
-	username	VARCHAR(128) NOT NULL,
+	username	VARCHAR(128) NOT NULL UNIQUE,
 	password	VARCHAR(255) NOT NULL,
 	wins		INT DEFAULT 0,
 	PRIMARY KEY (`id`)
@@ -20,7 +20,7 @@ VALUES
 
 CREATE TABLE games (
 	id			INT AUTO_INCREMENT NOT NULL,
-	name		VARCHAR(128) NOT NULL,
+	name		VARCHAR(128) NOT NULL UNIQUE,
 	password	VARCHAR(128) NOT NULL,
 	delete_at	INT NOT NULL,
 	PRIMARY KEY (`id`)
@@ -38,7 +38,7 @@ CREATE TABLE questions (
 CREATE TABLE players (
 	id			INT AUTO_INCREMENT NOT NULL,
 	game_id		INT NOT NULL,
-	user_id		INT NOT NULL,
+	user_id		INT NOT NULL UNIQUE,
 	progress	INT DEFAULT -1,
 	PRIMARY KEY (`id`)
 );
