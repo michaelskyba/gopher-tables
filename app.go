@@ -808,7 +808,10 @@ func game_delete_timer(db *sql.DB) {
 
 		current := time.Now().Unix()
 
-		_, err := db.Exec("DELETE FROM games WHERE delete_at < ?", current)
+		_, err := db.Exec(`DELETE games, players
+		                  FROM games
+		                  INNER JOIN players ON games.id = players.game_id
+		                  WHERE games.delete_at < ?`, current)
 		handle(err)
 	}
 }
