@@ -382,7 +382,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 			// it so the user can reload the page and have the message cleared
 			// without seeing a re-submit form prompt, but it's also just cleaner.
 
-			template_input.Message = "Error: Incorrect password"
+			template_input.Message = "Error: Incorrect password."
 
 			err := templates.ExecuteTemplate(writer, "password.html", template_input)
 			handle(err)
@@ -395,7 +395,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	yes, existing_name := is_already_in_game(username, db)
 	if yes && existing_name != game_name {
-		message := fmt.Sprintf("Error: You're already in a game ('%v')", existing_name)
+		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
 		set_cookie(writer, "message", message)
 
 		redirect(writer, request, "/")
@@ -429,7 +429,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// We want the trailing slash, so 3, not 2
 	path := strings.Split(request.URL.Path, "/")
 	if len(path) < 3 {
-		set_cookie(writer, "message", "Error: Visit the lobby to join a game")
+		set_cookie(writer, "message", "Error: Visit the lobby to join a game.")
 		redirect(writer, request, "/")
 	}
 
@@ -732,7 +732,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 
 	username := get_cookie(request, "username")
 	if username == "" {
-		set_cookie(writer, "message", "Error: You must be logged in to create a game")
+		set_cookie(writer, "message", "Error: You must be logged in to create a game.")
 		redirect(writer, request, "/")
 	}
 
@@ -748,13 +748,13 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	}
 
 	if len(name) > 15 {
-		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin")
+		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin.")
 		redirect(writer, request, "/create/")
 	}
 
 	yes, existing_name := is_already_in_game(username, db)
 	if yes {
-		message := fmt.Sprintf("Error: You're already in a game ('%v')", existing_name)
+		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
 		set_cookie(writer, "message", message)
 
 		redirect(writer, request, "/create/")
@@ -766,7 +766,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	                       name, password, delete_at)
 
 	if err != nil {
-		set_cookie(writer, "message", "Error: Game already exists")
+		set_cookie(writer, "message", "Error: Game already exists.")
 		redirect(writer, request, "/create/")
 		return
 	}
