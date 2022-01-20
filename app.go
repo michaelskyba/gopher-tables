@@ -307,8 +307,12 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	}
 
 	var current struct {
+		Message string
 		Games []string
 	}
+
+	current.Message = get_cookie(request, "message")
+	set_cookie(writer, "message", "")
 
 	// Get list of games from database
 	rows, err := db.Query("SELECT name FROM games")
@@ -356,7 +360,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
 		set_cookie(writer, "message", message)
 
-		redirect(writer, request, "/")
+		redirect(writer, request, "/lobby/")
 		return
 	}
 
@@ -371,7 +375,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	} else {
 		set_cookie(writer, "message", "Error: That game was not found.")
-		redirect(writer, request, "/")
+		redirect(writer, request, "/lobby/")
 		return
 	}
 
@@ -405,8 +409,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 		// They have the correct password, so we just proceed as usual
 	}
-
-	// TODO: Redirect to /lobby/ to say "already in game" instead of /
 
 	add_player(game_name, username, db)
 	redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))

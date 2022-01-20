@@ -24,6 +24,10 @@
 		<a href="/lobby/">Play</a>
 		<a href="/logout/">Log out</a>
 
+		{{if .Message}}
+			<blockquote>{{.Message}}</blockquote>
+		{{end}}
+
 		{{if .Games}}
 			<ul>
 			{{range .Games}}
