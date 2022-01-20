@@ -382,8 +382,9 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 			Message string
 		}{
 			game_name,
-			"",
+			get_cookie(request, "message"),
 		}
+		set_cookie(writer, "message", "")
 
 		// TODO: Hash passwords in /create_post/ and compare hashes here
 
@@ -394,18 +395,10 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 			return
 
-		// Wrong password
 		} else if request.FormValue("password") != password {
 
-			// TODO: Use the message cookie and a redirect() on a POST
-			// submission instead of rendering a template on POST. This makes
-			// it so the user can reload the page and have the message cleared
-			// without seeing a re-submit form prompt, but it's also just cleaner.
-
-			template_input.Message = "Error: Incorrect password."
-
-			err := templates.ExecuteTemplate(writer, "password.html", template_input)
-			handle(err)
+			set_cookie(writer, "message", "Error: Incorrect password.")
+			redirect(writer, request, request.URL.Path)
 
 			return
 		}
