@@ -60,6 +60,13 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 
 // Check if a player is already in a game
 func is_already_in_game(username string, db *sql.DB) (bool, string) {
+
+	// TODO: Only return string
+	// bool is useless because we know that "" --> false, != "" --> true
+	// You will need to make sure that created game names aren't "", I don't remember
+	// if that's already a thing
+	// You will also need to refactor the is_already_in_game calls
+
 	rows, err := db.Query(`SELECT games.name FROM games
 	                      INNER JOIN players  ON games.id    = players.game_id
 	                      INNER JOIN accounts ON accounts.id = players.user_id
@@ -293,6 +300,11 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 // Lobby
 func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
+	// TODO:
+	// Display more information in /lobby/ (difficult)
+	// - the number of players in each game
+	// - if it has a password or not
+
 	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
@@ -338,6 +350,20 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	}
 	var game_name = path[2]
 
+	_, existing_name := is_already_in_game(username, db)
+	if existing_name == game_name {
+
+		// Player has already joined - don't ask them for the password again
+		redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
+
+	} else if existing_name != "" {
+		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
+		set_cookie(writer, "message", message)
+
+		redirect(writer, request, "/")
+		return
+	}
+
 	// Make sure game exists and get password
 	var password string
 	rows, err := db.Query("SELECT password FROM games WHERE name = ?", game_name)
@@ -352,8 +378,6 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		redirect(writer, request, "/")
 		return
 	}
-
-	// TODO: Don't require a password if you've already joined the game
 
 	if password != "" {
 
@@ -393,18 +417,9 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		// They have the correct password, so we just proceed as usual
 	}
 
-	yes, existing_name := is_already_in_game(username, db)
-	if yes && existing_name != game_name {
-		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
-		set_cookie(writer, "message", message)
+	// TODO: Redirect to /lobby/ to say "already in game" instead of /
 
-		redirect(writer, request, "/")
-		return
-
-	} else if existing_name != game_name {
-		add_player(game_name, username, db)
-	}
-
+	add_player(game_name, username, db)
 	redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
 }
 
@@ -416,11 +431,8 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		redirect(writer, request, "/")
 	}
 
+	// TODO: Error if game doesn't exist
 	// TODO: Check if the player has joined or not in the players table
-
-	// TODO:
-	// Validate the game password cookie the player has if
-	// this game is password-protected
 
 	// play.html will be sending requests to /progress/ to see progress.
 	// It will need to send the game_id to /progress/, so we need to give that ID
@@ -443,8 +455,6 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		err = rows.Scan(&game_id)
 		handle(err)
 	}
-
-	// TODO: Error if game doesn't exist
 
 	// Don't send an empty string if the player has won
 	rows, err = db.Query(`SELECT players.progress FROM players
@@ -552,6 +562,8 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 
 // Create game page
 func create_get_handler(writer http.ResponseWriter, request *http.Request) {
+
+	// TODO: Check if the player is already in a game here, before create_post
 
 	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to create a game.")
