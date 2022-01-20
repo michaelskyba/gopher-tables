@@ -416,14 +416,14 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
+	// TODO: Make an "abort game" button in play.html so that a host can abort
+	// if nobody is joining and thus wants to join a different game
+
 	username := get_cookie(request, "username")
 	if username == "" {
 		set_cookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 	}
-
-	// TODO: Error if game doesn't exist
-	// TODO: Check if the player has joined or not in the players table
 
 	// play.html will be sending requests to /progress/ to see progress.
 	// It will need to send the game_id to /progress/, so we need to give that ID
@@ -445,6 +445,18 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	if rows.Next() {
 		err = rows.Scan(&game_id)
 		handle(err)
+
+	} else {
+		set_cookie(writer, "message", "Error: Game doesn't exist.")
+		redirect(writer, request, "/lobby/")
+		return
+	}
+
+	// User hasn't joined but is going to /play/x/ manually
+	if in_game(username, db) != game_name {
+		set_cookie(writer, "message", "Error: You are not in this game.")
+		redirect(writer, request, "/lobby/")
+		return
 	}
 
 	// Don't send an empty string if the player has won
