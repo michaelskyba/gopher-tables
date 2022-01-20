@@ -58,8 +58,8 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 	http.Redirect(writer, request, path, http.StatusSeeOther)
 }
 
-// Check if a player is already in a game
-func is_already_in_game(username string, db *sql.DB) string {
+// Get the name of the current game the player is in, or "" if none
+func in_game(username string, db *sql.DB) string {
 
 	rows, err := db.Query(`SELECT games.name FROM games
 	                      INNER JOIN players  ON games.id    = players.game_id
@@ -349,7 +349,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	}
 	var game_name = path[2]
 
-	existing_name := is_already_in_game(username, db)
+	existing_name := in_game(username, db)
 	if existing_name == game_name {
 
 		// Player has already joined - don't ask them for the password again
@@ -755,7 +755,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		redirect(writer, request, "/create/")
 	}
 
-	existing_name := is_already_in_game(username, db)
+	existing_name := in_game(username, db)
 	if existing_name != "" {
 		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
 		set_cookie(writer, "message", message)
