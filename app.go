@@ -350,6 +350,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 		// Player has already joined - don't ask them for the password again
 		redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
+		return
 
 	} else if existing_name != "" {
 		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
@@ -760,7 +761,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	}
 
 	existing_name := is_already_in_game(username, db)
-	existing_name != "" {
+	if existing_name != "" {
 		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
 		set_cookie(writer, "message", message)
 
@@ -780,6 +781,9 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 
 	game_id, err := result.LastInsertId()
 	handle(err)
+
+	// TODO: Set some kind of seed for rand, because it's using the same
+	// numbers every time
 
 	for i := 0; i < 10; i++ {
 		a := rand.Intn(12) + 1 // 1 to 12
