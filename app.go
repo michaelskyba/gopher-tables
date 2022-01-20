@@ -59,13 +59,7 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 }
 
 // Check if a player is already in a game
-func is_already_in_game(username string, db *sql.DB) (bool, string) {
-
-	// TODO: Only return string
-	// bool is useless because we know that "" --> false, != "" --> true
-	// You will need to make sure that created game names aren't "", I don't remember
-	// if that's already a thing
-	// You will also need to refactor the is_already_in_game calls
+func is_already_in_game(username string, db *sql.DB) string {
 
 	rows, err := db.Query(`SELECT games.name FROM games
 	                      INNER JOIN players  ON games.id    = players.game_id
@@ -78,10 +72,10 @@ func is_already_in_game(username string, db *sql.DB) (bool, string) {
 		err = rows.Scan(&game_name)
 		handle(err)
 
-		return true, game_name
+		return game_name
 	}
 
-	return false, ""
+	return ""
 }
 
 // Add a player to a game
@@ -304,6 +298,7 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	// Display more information in /lobby/ (difficult)
 	// - the number of players in each game
 	// - if it has a password or not
+	// - if you've joined this game
 
 	if get_cookie(request, "username") == "" {
 		set_cookie(writer, "message", "Log in to play.")
@@ -350,7 +345,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	}
 	var game_name = path[2]
 
-	_, existing_name := is_already_in_game(username, db)
+	existing_name := is_already_in_game(username, db)
 	if existing_name == game_name {
 
 		// Player has already joined - don't ask them for the password again
@@ -764,8 +759,8 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		redirect(writer, request, "/create/")
 	}
 
-	yes, existing_name := is_already_in_game(username, db)
-	if yes {
+	existing_name := is_already_in_game(username, db)
+	existing_name != "" {
 		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
 		set_cookie(writer, "message", message)
 
