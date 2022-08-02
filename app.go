@@ -30,10 +30,9 @@ var templates = template.Must(template.ParseFiles(
 	"html/play.html",
 	"html/create.html"))
 
-func handle(err error) {
+func hdl(err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		panic(err)
 	}
 }
 
@@ -65,12 +64,12 @@ func in_game(username string, db *sql.DB) string {
 	                      INNER JOIN players  ON games.id    = players.game_id
 	                      INNER JOIN accounts ON accounts.id = players.user_id
 	                      WHERE accounts.username = ?`, username)
-	handle(err)
+	hdl(err)
 
 	if rows.Next() {
 		var game_name string
 		err = rows.Scan(&game_name)
-		handle(err)
+		hdl(err)
 
 		return game_name
 	}
@@ -86,29 +85,29 @@ func add_player(game_name, username string, db *sql.DB) {
 	var game_id, user_id int
 
 	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
-	handle(err)
+	hdl(err)
 
 	if rows.Next() {
 		err = rows.Scan(&game_id)
-		handle(err)
+		hdl(err)
 	}
 	rows.Close()
 
 	rows, err = db.Query("SELECT id FROM accounts WHERE username = ?", username)
-	handle(err)
+	hdl(err)
 
 	if rows.Next() {
 		err = rows.Scan(&user_id)
-		handle(err)
+		hdl(err)
 	}
 	rows.Close()
 
 	_, err = db.Exec("UPDATE players SET progress = -1 WHERE user_id = ?", user_id)
-	handle(err)
+	hdl(err)
 
 	_, err = db.Exec("INSERT INTO players (game_id, user_id) VALUES (?, ?)",
 		game_id, user_id)
-	handle(err)
+	hdl(err)
 }
 
 // Home page
@@ -128,11 +127,11 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		err := templates.ExecuteTemplate(writer, "index.html", template_input)
-		handle(err)
+		hdl(err)
 
 	} else {
 		err := templates.ExecuteTemplate(writer, "404.html", request.URL.Path)
-		handle(err)
+		hdl(err)
 	}
 }
 
@@ -151,7 +150,7 @@ func login_get_handler(writer http.ResponseWriter, request *http.Request) {
 	set_cookie(writer, "message", "")
 
 	err := templates.ExecuteTemplate(writer, "login.html", message)
-	handle(err)
+	hdl(err)
 }
 
 // Log in URL point for submitting the log in form
@@ -171,14 +170,14 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	}
 
 	rows, err := db.Query("SELECT password FROM accounts WHERE username = ?", form_username)
-	handle(err)
+	hdl(err)
 	defer rows.Close()
 
 	success := true
 	if rows.Next() {
 		var password string
 		err = rows.Scan(&password)
-		handle(err)
+		hdl(err)
 
 		if password != form_password {
 			success = false
@@ -222,7 +221,7 @@ func register_get_handler(writer http.ResponseWriter, request *http.Request) {
 	set_cookie(writer, "message", "")
 
 	err := templates.ExecuteTemplate(writer, "register.html", message)
-	handle(err)
+	hdl(err)
 }
 
 // Register URL pointing for submitting POST request form
@@ -279,7 +278,7 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 	var wins int
 	if rows.Next() {
 		err = rows.Scan(&wins)
-		handle(err)
+		hdl(err)
 	}
 
 	type profile struct {
@@ -288,7 +287,7 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 	}
 
 	err = templates.ExecuteTemplate(writer, "profile.html", profile{username, wins})
-	handle(err)
+	hdl(err)
 }
 
 // Lobby
@@ -316,19 +315,19 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 
 	// Get list of games from database
 	rows, err := db.Query("SELECT name FROM games")
-	handle(err)
+	hdl(err)
 	defer rows.Close()
 
 	for rows.Next() {
 		var name string
 		err = rows.Scan(&name)
-		handle(err)
+		hdl(err)
 
 		current.Games = append(current.Games, name)
 	}
 
 	err = templates.ExecuteTemplate(writer, "lobby.html", current)
-	handle(err)
+	hdl(err)
 }
 
 // /join/<name>/, accessed when pressing "Join" on a game
@@ -367,11 +366,11 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// Make sure game exists and get password
 	var password string
 	rows, err := db.Query("SELECT password FROM games WHERE name = ?", game_name)
-	handle(err)
+	hdl(err)
 	defer rows.Close()
 	if rows.Next() {
 		err = rows.Scan(&password)
-		handle(err)
+		hdl(err)
 
 	} else {
 		set_cookie(writer, "message", "Error: That game was not found.")
@@ -395,7 +394,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		// User just clicked "join" on /lobby/
 		if request.Method != http.MethodPost {
 			err := templates.ExecuteTemplate(writer, "password.html", template_input)
-			handle(err)
+			hdl(err)
 
 			return
 
@@ -439,12 +438,12 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	game_name := path[2]
 
 	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
-	handle(err)
+	hdl(err)
 
 	var game_id int
 	if rows.Next() {
 		err = rows.Scan(&game_id)
-		handle(err)
+		hdl(err)
 
 	} else {
 		set_cookie(writer, "message", "Error: Game doesn't exist.")
@@ -464,7 +463,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	                     INNER JOIN accounts ON accounts.id = players.user_id
 	                     WHERE players.progress > 9
 	                     AND accounts.username = ?`, username)
-	handle(err)
+	hdl(err)
 
 	if rows.Next() {
 		template_input := struct {
@@ -478,7 +477,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		}
 
 		err = templates.ExecuteTemplate(writer, "play.html", template_input)
-		handle(err)
+		hdl(err)
 		return
 	}
 
@@ -493,7 +492,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	                      AND accounts.username = ?`, username)
 	if rows.Next() {
 		err = rows.Scan(&question)
-		handle(err)
+		hdl(err)
 	}
 
 	template_input := struct {
@@ -507,7 +506,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	}
 
 	err = templates.ExecuteTemplate(writer, "play.html", template_input)
-	handle(err)
+	hdl(err)
 }
 
 // Basically, a user creates a game and that user's progress is set to -1. /play/
@@ -543,7 +542,7 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 	                    INNER JOIN accounts ON accounts.id = players.user_id
 	                    SET players.progress = 0
 	                    WHERE accounts.username = ?`, username)
-	handle(err)
+	hdl(err)
 
 	// Display first question
 	rows, err := db.Query(`SELECT text FROM questions
@@ -552,12 +551,12 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 	                      INNER JOIN accounts ON accounts.id = players.user_id
 	                      WHERE questions.progress = 0
 	                      AND   accounts.username  = ?`, username)
-	handle(err)
+	hdl(err)
 
 	if rows.Next() {
 		var question string
 		err = rows.Scan(&question)
-		handle(err)
+		hdl(err)
 
 		fmt.Fprintln(writer, question)
 	}
@@ -577,7 +576,7 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 	set_cookie(writer, "message", "")
 
 	err := templates.ExecuteTemplate(writer, "create.html", message)
-	handle(err)
+	hdl(err)
 }
 
 // API for the /play/ client to send requests to with AJAX
@@ -602,7 +601,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	                      INNER JOIN accounts ON accounts.id = players.user_id
 	                      INNER JOIN games    ON games.id    = players.game_id
 	                      WHERE players.game_id = ?`, game_id)
-	handle(err)
+	hdl(err)
 
 	for rows.Next() {
 		var progress int
@@ -651,18 +650,18 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		                 INNER JOIN questions ON games.id    = questions.game_id
 	                     WHERE players.progress = questions.progress
 	                     AND accounts.username = ?`, username)
-	handle(err)
+	hdl(err)
 
 	if rows.Next() {
 		err = rows.Scan(&user_id, &progress, &answer)
-		handle(err)
+		hdl(err)
 	}
 
 	if answer_input == answer {
 
 		_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
 		                  progress + 1, user_id)
-		handle(err)
+		hdl(err)
 
 		// The player won
 		// It's > 8 and not > 9 because we haven't updated the progress variable
@@ -670,7 +669,7 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		if progress > 8 {
 
 			_, err = db.Exec("UPDATE accounts SET wins = wins + 1 WHERE id = ?", user_id)
-			handle(err)
+			hdl(err)
 
 			// TODO: We need some way of deleting games periodically
 			//
@@ -712,7 +711,7 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 			                 INNER JOIN players ON games.id = players.game_id
 			                 SET games.delete_at = ?
 			                 WHERE players.user_id = ?`, delete_at, user_id)
-			handle(err)
+			hdl(err)
 
 			return
 		}
@@ -724,12 +723,12 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		                      INNER JOIN players  ON games.id    = players.game_id
 		                      WHERE questions.progress = ?
 		                      AND players.user_id = ?`, progress + 1, user_id)
-		handle(err)
+		hdl(err)
 
 		var question string
 		if rows.Next() {
 			err = rows.Scan(&question)
-			handle(err)
+			hdl(err)
 		}
 		fmt.Fprintln(writer, question)
 
@@ -787,7 +786,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	}
 
 	game_id, err := result.LastInsertId()
-	handle(err)
+	hdl(err)
 
 	// TODO: Set some kind of seed for rand, because it's using the same
 	// numbers every time
@@ -799,7 +798,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		_, err := db.Exec(`INSERT INTO questions (game_id, text, answer, progress)
 		                  VALUES (?, ?, ?, ?)`, game_id, fmt.Sprintf("%v × %v", a, b),
 		                  a * b, i)
-		handle(err)
+		hdl(err)
 	}
 
 	add_player(name, username, db)
@@ -830,7 +829,7 @@ func game_delete_timer(db *sql.DB) {
 		                  FROM games
 		                  INNER JOIN players ON games.id = players.game_id
 		                  WHERE games.delete_at < ?`, current)
-		handle(err)
+		hdl(err)
 	}
 }
 
@@ -847,11 +846,11 @@ func main() {
 	// TODO: Use SQL Joins instead of manually fiddling with IDs
 
 	db, err := sql.Open("mysql", config.FormatDSN())
-	handle(err)
+	hdl(err)
 
 	// Check for connection
 	err = db.Ping()
-	handle(err)
+	hdl(err)
 
 	server := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", server))
