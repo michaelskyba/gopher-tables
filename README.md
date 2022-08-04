@@ -39,11 +39,16 @@ select * from accounts;
 quit
 ```
 
+## Installation
+```sh
+cd /path/to/gopher-tables
+./build
+```
+
 ## Running
 ```sh
 cd /path/to/gopher-tables
-go build app.go
-./app &
+./main &
 $BROWSER localhost:8000
 ```
 
