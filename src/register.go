@@ -8,7 +8,6 @@ import (
 
 // Register page
 func registerGetHandler(writer http.ResponseWriter, request *http.Request) {
-
 	username := getCookie(request, "username")
 	message := getCookie(request, "message")
 
@@ -26,7 +25,6 @@ func registerGetHandler(writer http.ResponseWriter, request *http.Request) {
 
 // Register URL pointing for submitting POST request form
 func registerPostHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	formUsername := request.FormValue("username")
 	formPassword := request.FormValue("password")
 	formConfirm := request.FormValue("confirm")

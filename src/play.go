@@ -7,7 +7,6 @@ import (
 )
 
 func playHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	// TODO: Make an "abort game" button in play.html so that a host can abort
 	// if nobody is joining and thus wants to join a different game
 

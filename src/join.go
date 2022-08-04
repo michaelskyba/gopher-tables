@@ -10,7 +10,6 @@ import (
 
 // /join/<name>/, accessed when pressing "Join" on a game
 func joinHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	username := getCookie(request, "username")
 	if username == "" {
 		setCookie(writer, "message", "Log in to play.")
@@ -27,9 +26,9 @@ func joinHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) 
 	var gameName = path[2]
 
 	existingName := inGame(username, db)
-	if existingName == gameName {
 
-		// Player has already joined - don't ask them for the password again
+	// Player has already joined - don't ask them for the password again
+	if existingName == gameName {
 		redirect(writer, request, fmt.Sprintf("/play/%v/", gameName))
 		return
 
@@ -57,7 +56,6 @@ func joinHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) 
 	}
 
 	if password != "" {
-
 		templateInput := struct {
 			Name    string
 			Message string
@@ -73,14 +71,11 @@ func joinHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) 
 		if request.Method != http.MethodPost {
 			err := templates.ExecuteTemplate(writer, "password.html", templateInput)
 			hdl(err)
-
 			return
 
 		} else if request.FormValue("password") != password {
-
 			setCookie(writer, "message", "Error: Incorrect password.")
 			redirect(writer, request, request.URL.Path)
-
 			return
 		}
 

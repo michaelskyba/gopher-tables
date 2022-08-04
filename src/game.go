@@ -7,7 +7,6 @@ import (
 
 // Get the name of the current game the player is in, or "" if none
 func inGame(username string, db *sql.DB) string {
-
 	rows, err := db.Query(`SELECT games.name FROM games
 	                      INNER JOIN players  ON games.id    = players.game_id
 	                      INNER JOIN accounts ON accounts.id = players.user_id
@@ -28,7 +27,6 @@ func inGame(username string, db *sql.DB) string {
 // Delete games scheduled for deletion (either finished or AFK timeout)
 func gameDeleteTimer(db *sql.DB) {
 	for range time.Tick(time.Second * 10) {
-
 		current := time.Now().Unix()
 
 		_, err := db.Exec(`DELETE games, players
@@ -41,9 +39,7 @@ func gameDeleteTimer(db *sql.DB) {
 
 // Add a player to a game
 func addPlayer(gameName, username string, db *sql.DB) {
-
 	// Find the game ID and user ID
-
 	var game_id, user_id int
 
 	rows, err := db.Query("SELECT id FROM games WHERE name = ?", gameName)

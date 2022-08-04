@@ -4,8 +4,9 @@ import (
 	"html/template"
 	"net/http"
 
-	"log"
 	"database/sql"
+	"log"
+
 	"github.com/go-sql-driver/mysql"
 )
 

@@ -14,7 +14,6 @@ import (
 // This is used when answering questions - you submit your answer here to check if it
 // was right. If it was, your progress will be updated
 func answerHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	// TODO: Return error if the URL is invalid
 	// Valid: /answer/your_answer_here/
 
@@ -52,7 +51,6 @@ func answerHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	}
 
 	if answerInput == answer {
-
 		_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
 			progress+1, user_id)
 		hdl(err)
@@ -61,7 +59,6 @@ func answerHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 		// It's > 8 and not > 9 because we haven't updated the progress variable
 		// and instead use progress + 1 when talking to SQL
 		if progress > 8 {
-
 			_, err = db.Exec("UPDATE accounts SET wins = wins + 1 WHERE id = ?", user_id)
 			hdl(err)
 

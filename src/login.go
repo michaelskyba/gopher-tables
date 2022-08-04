@@ -7,7 +7,6 @@ import (
 
 // Log in page
 func loginGetHandler(writer http.ResponseWriter, request *http.Request) {
-
 	username := getCookie(request, "username")
 	message := getCookie(request, "message")
 
@@ -25,7 +24,6 @@ func loginGetHandler(writer http.ResponseWriter, request *http.Request) {
 
 // Log in URL point for submitting the log in form
 func loginPostHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	if request.Method != http.MethodPost {
 		return
 	}
@@ -78,7 +76,6 @@ func loginPostHandler(writer http.ResponseWriter, request *http.Request, db *sql
 
 // Log out
 func logoutHandler(writer http.ResponseWriter, request *http.Request) {
-
 	if getCookie(request, "username") == "" {
 		setCookie(writer, "message", "You're already logged out.")
 	} else {

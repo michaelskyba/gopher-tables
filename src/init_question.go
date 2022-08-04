@@ -22,7 +22,6 @@ import (
 // a userscript that solves multiplication for you, but that's different, since it
 // hijacks the core mechanic of the game instead of a specific implementation detail.
 func initQuestionHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	// TODO: Make sure the player is logged in
 	// TODO: Make sure the player has joined a game
 	// TODO: Make sure the game has two players

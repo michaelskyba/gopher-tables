@@ -13,7 +13,6 @@ import (
 
 // Create game page
 func createGetHandler(writer http.ResponseWriter, request *http.Request) {
-
 	// TODO: Check if the player is already in a game here, before create_post
 
 	if getCookie(request, "username") == "" {
@@ -30,7 +29,6 @@ func createGetHandler(writer http.ResponseWriter, request *http.Request) {
 
 // Create game form submission URL endpoint
 func createPostHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-
 	if request.Method != http.MethodPost {
 		return
 	}
