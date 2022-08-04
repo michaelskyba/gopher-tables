@@ -4,14 +4,14 @@ import (
 	"html/template"
 	"net/http"
 
-	"time"
 	"math/rand"
+	"time"
 
 	"fmt"
 	"log"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"database/sql"
 	"encoding/json"
@@ -306,7 +306,7 @@ func lobbyHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	var current struct {
 		Message string
-		Games []string
+		Games   []string
 	}
 
 	current.Message = getCookie(request, "message")
@@ -380,7 +380,7 @@ func joinHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) 
 	if password != "" {
 
 		templateInput := struct {
-			Name string
+			Name    string
 			Message string
 		}{
 			gameName,
@@ -466,8 +466,8 @@ func playHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) 
 
 	if rows.Next() {
 		templateInput := struct {
-			Name string
-			ID int
+			Name     string
+			ID       int
 			Question string
 		}{
 			gameName,
@@ -495,8 +495,8 @@ func playHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) 
 	}
 
 	templateInput := struct {
-		Name string
-		ID int
+		Name     string
+		ID       int
 		Question string
 	}{
 		gameName,
@@ -537,7 +537,7 @@ func initQuestionHandler(writer http.ResponseWriter, request *http.Request, db *
 	username := getCookie(request, "username")
 
 	// Set progress to first real value "0" instead of -1
-	_, err   := db.Exec(`UPDATE players
+	_, err := db.Exec(`UPDATE players
 	                    INNER JOIN accounts ON accounts.id = players.user_id
 	                    SET players.progress = 0
 	                    WHERE accounts.username = ?`, username)
@@ -659,7 +659,7 @@ func answerHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	if answerInput == answer {
 
 		_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
-		                  progress + 1, user_id)
+			progress+1, user_id)
 		hdl(err)
 
 		// The player won
@@ -721,7 +721,7 @@ func answerHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 		                      INNER JOIN games    ON games.id    = questions.game_id
 		                      INNER JOIN players  ON games.id    = players.game_id
 		                      WHERE questions.progress = ?
-		                      AND players.user_id = ?`, progress + 1, user_id)
+		                      AND players.user_id = ?`, progress+1, user_id)
 		hdl(err)
 
 		var question string
@@ -776,7 +776,7 @@ func createPostHandler(writer http.ResponseWriter, request *http.Request, db *sq
 
 	delete_at := int(time.Now().Unix()) + 3600
 	result, err := db.Exec("INSERT INTO games (name, password, delete_at) VALUES (?, ?, ?)",
-	                       name, password, delete_at)
+		name, password, delete_at)
 
 	if err != nil {
 		setCookie(writer, "message", "Error: Game already exists.")
@@ -796,7 +796,7 @@ func createPostHandler(writer http.ResponseWriter, request *http.Request, db *sq
 
 		_, err := db.Exec(`INSERT INTO questions (game_id, text, answer, progress)
 		                  VALUES (?, ?, ?, ?)`, game_id, fmt.Sprintf("%v × %v", a, b),
-		                  a * b, i)
+			a*b, i)
 		hdl(err)
 	}
 
