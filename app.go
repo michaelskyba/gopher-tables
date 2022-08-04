@@ -35,7 +35,7 @@ func hdl(err error) {
 	}
 }
 
-func set_cookie(writer http.ResponseWriter, name, value string) {
+func setCookie(writer http.ResponseWriter, name, value string) {
 	http.SetCookie(writer, &http.Cookie{
 		Name:  name,
 		Value: value,
@@ -43,7 +43,7 @@ func set_cookie(writer http.ResponseWriter, name, value string) {
 	})
 }
 
-func get_cookie(request *http.Request, name string) string {
+func getCookie(request *http.Request, name string) string {
 	cookie, err := request.Cookie(name)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func redirect(writer http.ResponseWriter, request *http.Request, path string) {
 }
 
 // Get the name of the current game the player is in, or "" if none
-func in_game(username string, db *sql.DB) string {
+func inGame(username string, db *sql.DB) string {
 
 	rows, err := db.Query(`SELECT games.name FROM games
 	                      INNER JOIN players  ON games.id    = players.game_id
@@ -66,24 +66,24 @@ func in_game(username string, db *sql.DB) string {
 	hdl(err)
 
 	if rows.Next() {
-		var game_name string
-		err = rows.Scan(&game_name)
+		var gameName string
+		err = rows.Scan(&gameName)
 		hdl(err)
 
-		return game_name
+		return gameName
 	}
 
 	return ""
 }
 
 // Add a player to a game
-func add_player(game_name, username string, db *sql.DB) {
+func addPlayer(gameName, username string, db *sql.DB) {
 
 	// Find the game ID and user ID
 
 	var game_id, user_id int
 
-	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
+	rows, err := db.Query("SELECT id FROM games WHERE name = ?", gameName)
 	hdl(err)
 
 	if rows.Next() {
@@ -110,14 +110,14 @@ func add_player(game_name, username string, db *sql.DB) {
 }
 
 // Home page
-func home_handler(writer http.ResponseWriter, request *http.Request) {
-	username := get_cookie(request, "username")
-	message := get_cookie(request, "message")
+func homeHandler(writer http.ResponseWriter, request *http.Request) {
+	username := getCookie(request, "username")
+	message := getCookie(request, "message")
 
 	if request.URL.Path == "/" {
-		set_cookie(writer, "message", "")
+		setCookie(writer, "message", "")
 
-		template_input := struct {
+		templateInput := struct {
 			Message  string
 			LoggedIn bool
 		}{
@@ -125,7 +125,7 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 			username != "",
 		}
 
-		err := templates.ExecuteTemplate(writer, "index.html", template_input)
+		err := templates.ExecuteTemplate(writer, "index.html", templateInput)
 		hdl(err)
 
 	} else {
@@ -135,40 +135,40 @@ func home_handler(writer http.ResponseWriter, request *http.Request) {
 }
 
 // Log in page
-func login_get_handler(writer http.ResponseWriter, request *http.Request) {
+func loginGetHandler(writer http.ResponseWriter, request *http.Request) {
 
-	username := get_cookie(request, "username")
-	message := get_cookie(request, "message")
+	username := getCookie(request, "username")
+	message := getCookie(request, "message")
 
 	if username != "" {
-		set_cookie(writer, "message", "You're already logged in.")
+		setCookie(writer, "message", "You're already logged in.")
 		redirect(writer, request, "/")
 		return
 	}
 
-	set_cookie(writer, "message", "")
+	setCookie(writer, "message", "")
 
 	err := templates.ExecuteTemplate(writer, "login.html", message)
 	hdl(err)
 }
 
 // Log in URL point for submitting the log in form
-func login_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func loginPostHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	if request.Method != http.MethodPost {
 		return
 	}
 
-	form_username := request.FormValue("username")
-	form_password := request.FormValue("password")
+	formUsername := request.FormValue("username")
+	formPassword := request.FormValue("password")
 
-	if form_username == "" {
-		set_cookie(writer, "message", "Error: You have entered invalid credentials.")
+	if formUsername == "" {
+		setCookie(writer, "message", "Error: You have entered invalid credentials.")
 		redirect(writer, request, "/login/")
 		return
 	}
 
-	rows, err := db.Query("SELECT password FROM accounts WHERE username = ?", form_username)
+	rows, err := db.Query("SELECT password FROM accounts WHERE username = ?", formUsername)
 	hdl(err)
 	defer rows.Close()
 
@@ -178,7 +178,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 		err = rows.Scan(&password)
 		hdl(err)
 
-		if password != form_password {
+		if password != formPassword {
 			success = false
 		}
 
@@ -187,7 +187,7 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	}
 
 	if !success {
-		set_cookie(writer, "message", "Error: You have entered invalid credentials.")
+		setCookie(writer, "message", "Error: You have entered invalid credentials.")
 		redirect(writer, request, "/login/")
 		return
 	}
@@ -200,71 +200,71 @@ func login_post_handler(writer http.ResponseWriter, request *http.Request, db *s
 	// An exception might be for /progress/ if it's slowing down the response
 	// speed significantly, because /progress/ needs to be called rapidly.
 
-	set_cookie(writer, "username", form_username)
-	set_cookie(writer, "message", "You have successfully logged in.")
+	setCookie(writer, "username", formUsername)
+	setCookie(writer, "message", "You have successfully logged in.")
 	redirect(writer, request, "/")
 }
 
 // Register page
-func register_get_handler(writer http.ResponseWriter, request *http.Request) {
+func registerGetHandler(writer http.ResponseWriter, request *http.Request) {
 
-	username := get_cookie(request, "username")
-	message := get_cookie(request, "message")
+	username := getCookie(request, "username")
+	message := getCookie(request, "message")
 
 	if username != "" {
-		set_cookie(writer, "message", "You're already logged in.")
+		setCookie(writer, "message", "You're already logged in.")
 		redirect(writer, request, "/")
 		return
 	}
 
-	set_cookie(writer, "message", "")
+	setCookie(writer, "message", "")
 
 	err := templates.ExecuteTemplate(writer, "register.html", message)
 	hdl(err)
 }
 
 // Register URL pointing for submitting POST request form
-func register_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func registerPostHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	form_username := request.FormValue("username")
-	form_password := request.FormValue("password")
-	form_confirm := request.FormValue("confirm")
+	formUsername := request.FormValue("username")
+	formPassword := request.FormValue("password")
+	formConfirm := request.FormValue("confirm")
 
-	if form_password != form_confirm {
-		set_cookie(writer, "message", "Error: Your passwords don't match.")
+	if formPassword != formConfirm {
+		setCookie(writer, "message", "Error: Your passwords don't match.")
 		redirect(writer, request, "/register/")
 		return
 	}
 
 	// Have standard-looking usernames
 	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
-	if !valid.MatchString(form_username) {
-		set_cookie(writer, "message", "Error: Your username must match '^[a-zA-Z0-9 _-]+$'.")
+	if !valid.MatchString(formUsername) {
+		setCookie(writer, "message", "Error: Your username must match '^[a-zA-Z0-9 _-]+$'.")
 		redirect(writer, request, "/register/")
 		return
 	}
 
 	// TODO: Hash password instead of storing in plaintext
 
-	_, err := db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", form_username, form_password)
+	_, err := db.Exec("INSERT INTO accounts (username, password) VALUES (?, ?)", formUsername, formPassword)
 	if err != nil {
-		set_cookie(writer, "message", "Error: That username is taken.")
+		setCookie(writer, "message", "Error: That username is taken.")
 		redirect(writer, request, "/register/")
 		return
 	}
 
 	// Log in
-	set_cookie(writer, "username", form_username)
-	set_cookie(writer, "message", "You have successfully registered.")
+	setCookie(writer, "username", formUsername)
+	setCookie(writer, "message", "You have successfully registered.")
 	redirect(writer, request, "/")
 }
 
 // Profile
-func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-	username := get_cookie(request, "username")
+func profileHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	username := getCookie(request, "username")
 
 	if username == "" {
-		set_cookie(writer, "message", "Log in to see your profile.")
+		setCookie(writer, "message", "Log in to see your profile.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -290,7 +290,7 @@ func profile_handler(writer http.ResponseWriter, request *http.Request, db *sql.
 }
 
 // Lobby
-func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func lobbyHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	// TODO:
 	// Display more information in /lobby/ (difficult)
@@ -298,8 +298,8 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 	// - if it has a password or not
 	// - if you've joined this game
 
-	if get_cookie(request, "username") == "" {
-		set_cookie(writer, "message", "Log in to play.")
+	if getCookie(request, "username") == "" {
+		setCookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
 	}
@@ -309,8 +309,8 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 		Games []string
 	}
 
-	current.Message = get_cookie(request, "message")
-	set_cookie(writer, "message", "")
+	current.Message = getCookie(request, "message")
+	setCookie(writer, "message", "")
 
 	// Get list of games from database
 	rows, err := db.Query("SELECT name FROM games")
@@ -330,33 +330,33 @@ func lobby_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB
 }
 
 // /join/<name>/, accessed when pressing "Join" on a game
-func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func joinHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
-	username := get_cookie(request, "username")
+	username := getCookie(request, "username")
 	if username == "" {
-		set_cookie(writer, "message", "Log in to play.")
+		setCookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 		return
 	}
 
 	path := strings.Split(request.URL.Path, "/")
 	if len(path) != 4 {
-		set_cookie(writer, "message", "Visit the lobby (press 'Play') to join a game.")
+		setCookie(writer, "message", "Visit the lobby (press 'Play') to join a game.")
 		redirect(writer, request, "/")
 		return
 	}
-	var game_name = path[2]
+	var gameName = path[2]
 
-	existing_name := in_game(username, db)
-	if existing_name == game_name {
+	existingName := inGame(username, db)
+	if existingName == gameName {
 
 		// Player has already joined - don't ask them for the password again
-		redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
+		redirect(writer, request, fmt.Sprintf("/play/%v/", gameName))
 		return
 
-	} else if existing_name != "" {
-		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
-		set_cookie(writer, "message", message)
+	} else if existingName != "" {
+		message := fmt.Sprintf("Error: You're already in a game ('%v').", existingName)
+		setCookie(writer, "message", message)
 
 		redirect(writer, request, "/lobby/")
 		return
@@ -364,7 +364,7 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 
 	// Make sure game exists and get password
 	var password string
-	rows, err := db.Query("SELECT password FROM games WHERE name = ?", game_name)
+	rows, err := db.Query("SELECT password FROM games WHERE name = ?", gameName)
 	hdl(err)
 	defer rows.Close()
 	if rows.Next() {
@@ -372,34 +372,34 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		hdl(err)
 
 	} else {
-		set_cookie(writer, "message", "Error: That game was not found.")
+		setCookie(writer, "message", "Error: That game was not found.")
 		redirect(writer, request, "/lobby/")
 		return
 	}
 
 	if password != "" {
 
-		template_input := struct {
+		templateInput := struct {
 			Name string
 			Message string
 		}{
-			game_name,
-			get_cookie(request, "message"),
+			gameName,
+			getCookie(request, "message"),
 		}
-		set_cookie(writer, "message", "")
+		setCookie(writer, "message", "")
 
 		// TODO: Hash passwords in /create_post/ and compare hashes here
 
 		// User just clicked "join" on /lobby/
 		if request.Method != http.MethodPost {
-			err := templates.ExecuteTemplate(writer, "password.html", template_input)
+			err := templates.ExecuteTemplate(writer, "password.html", templateInput)
 			hdl(err)
 
 			return
 
 		} else if request.FormValue("password") != password {
 
-			set_cookie(writer, "message", "Error: Incorrect password.")
+			setCookie(writer, "message", "Error: Incorrect password.")
 			redirect(writer, request, request.URL.Path)
 
 			return
@@ -408,18 +408,18 @@ func join_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		// They have the correct password, so we just proceed as usual
 	}
 
-	add_player(game_name, username, db)
-	redirect(writer, request, fmt.Sprintf("/play/%v/", game_name))
+	addPlayer(gameName, username, db)
+	redirect(writer, request, fmt.Sprintf("/play/%v/", gameName))
 }
 
-func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func playHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	// TODO: Make an "abort game" button in play.html so that a host can abort
 	// if nobody is joining and thus wants to join a different game
 
-	username := get_cookie(request, "username")
+	username := getCookie(request, "username")
 	if username == "" {
-		set_cookie(writer, "message", "Log in to play.")
+		setCookie(writer, "message", "Log in to play.")
 		redirect(writer, request, "/")
 	}
 
@@ -430,13 +430,13 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	// We want the trailing slash, so 3, not 2
 	path := strings.Split(request.URL.Path, "/")
 	if len(path) < 3 {
-		set_cookie(writer, "message", "Error: Visit the lobby to join a game.")
+		setCookie(writer, "message", "Error: Visit the lobby to join a game.")
 		redirect(writer, request, "/")
 	}
 
-	game_name := path[2]
+	gameName := path[2]
 
-	rows, err := db.Query("SELECT id FROM games WHERE name = ?", game_name)
+	rows, err := db.Query("SELECT id FROM games WHERE name = ?", gameName)
 	hdl(err)
 
 	var game_id int
@@ -445,14 +445,14 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		hdl(err)
 
 	} else {
-		set_cookie(writer, "message", "Error: Game doesn't exist.")
+		setCookie(writer, "message", "Error: Game doesn't exist.")
 		redirect(writer, request, "/lobby/")
 		return
 	}
 
 	// User hasn't joined but is going to /play/x/ manually
-	if in_game(username, db) != game_name {
-		set_cookie(writer, "message", "Error: You are not in this game.")
+	if inGame(username, db) != gameName {
+		setCookie(writer, "message", "Error: You are not in this game.")
 		redirect(writer, request, "/lobby/")
 		return
 	}
@@ -465,17 +465,17 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 	hdl(err)
 
 	if rows.Next() {
-		template_input := struct {
+		templateInput := struct {
 			Name string
 			ID int
 			Question string
 		}{
-			game_name,
+			gameName,
 			game_id,
 			"winner",
 		}
 
-		err = templates.ExecuteTemplate(writer, "play.html", template_input)
+		err = templates.ExecuteTemplate(writer, "play.html", templateInput)
 		hdl(err)
 		return
 	}
@@ -494,17 +494,17 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 		hdl(err)
 	}
 
-	template_input := struct {
+	templateInput := struct {
 		Name string
 		ID int
 		Question string
 	}{
-		game_name,
+		gameName,
 		game_id,
 		question,
 	}
 
-	err = templates.ExecuteTemplate(writer, "play.html", template_input)
+	err = templates.ExecuteTemplate(writer, "play.html", templateInput)
 	hdl(err)
 }
 
@@ -512,7 +512,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 // renders the page and tells the client that the current question is "".
 // play.js knows that "" means that we're waiting for a player to join, so it says that.
 // Once a new player joins, we can start playing, so answer.js sends a request here, to
-// /init_question/. init_question_handler needs to set the player's progress to 0
+// /init_question/. initQuestionHandler needs to set the player's progress to 0
 // and return the first question, which the user can now start to solve. The rest of
 // the questions are provided by /answer/ on correct answer submissions.
 //
@@ -522,7 +522,7 @@ func play_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB)
 // You can argue that it doesn't matter because it's already possible to have
 // a userscript that solves multiplication for you, but that's different, since it
 // hijacks the core mechanic of the game instead of a specific implementation detail.
-func init_question_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func initQuestionHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	// TODO: Make sure the player is logged in
 	// TODO: Make sure the player has joined a game
@@ -534,7 +534,7 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 	// as well just figure it out on the server side, right?
 	// Yeah, it /is/ useless. Get rid of game_id as an argument (same with /progress/).
 
-	username := get_cookie(request, "username")
+	username := getCookie(request, "username")
 
 	// Set progress to first real value "0" instead of -1
 	_, err   := db.Exec(`UPDATE players
@@ -562,17 +562,17 @@ func init_question_handler(writer http.ResponseWriter, request *http.Request, db
 }
 
 // Create game page
-func create_get_handler(writer http.ResponseWriter, request *http.Request) {
+func createGetHandler(writer http.ResponseWriter, request *http.Request) {
 
 	// TODO: Check if the player is already in a game here, before create_post
 
-	if get_cookie(request, "username") == "" {
-		set_cookie(writer, "message", "Log in to create a game.")
+	if getCookie(request, "username") == "" {
+		setCookie(writer, "message", "Log in to create a game.")
 		redirect(writer, request, "/")
 	}
 
-	message := get_cookie(request, "message")
-	set_cookie(writer, "message", "")
+	message := getCookie(request, "message")
+	setCookie(writer, "message", "")
 
 	err := templates.ExecuteTemplate(writer, "create.html", message)
 	hdl(err)
@@ -581,7 +581,7 @@ func create_get_handler(writer http.ResponseWriter, request *http.Request) {
 // API for the /play/ client to send requests to with AJAX
 // This will return the progress of the players so that the client can render them
 // Valid: /progress/game_id/
-func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func progressHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 	path := strings.Split(request.URL.Path, "/")
 	game_id := path[2]
 
@@ -593,7 +593,7 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 	// Why? Well, we have to query the database either way to see if they
 	// have joined, so it makes no sense to pass around a game ID on top of that
 
-	progress_set := map[string]int{}
+	progressSet := map[string]int{}
 
 	rows, err := db.Query(`SELECT players.progress, accounts.username
 	                      FROM players
@@ -607,28 +607,28 @@ func progress_handler(writer http.ResponseWriter, request *http.Request, db *sql
 		var username string
 		err = rows.Scan(&progress, &username)
 
-		progress_set[username] = progress
+		progressSet[username] = progress
 	}
 	rows.Close()
 
 	encoder := json.NewEncoder(writer)
-	encoder.Encode(progress_set)
+	encoder.Encode(progressSet)
 }
 
 // API for the /play/ client to send requests to with AJAX
 // This is used when answering questions - you submit your answer here to check if it
 // was right. If it was, your progress will be updated
-func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func answerHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	// TODO: Return error if the URL is invalid
 	// Valid: /answer/your_answer_here/
 
 	// TODO: Return error if the user isn't signed in
 
-	username := get_cookie(request, "username")
+	username := getCookie(request, "username")
 
 	path := strings.Split(request.URL.Path, "/")
-	answer_input, err := strconv.Atoi(path[2])
+	answerInput, err := strconv.Atoi(path[2])
 
 	// Bastard sent a string
 	if err != nil {
@@ -656,7 +656,7 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 		hdl(err)
 	}
 
-	if answer_input == answer {
+	if answerInput == answer {
 
 		_, err = db.Exec("UPDATE players SET progress = ? WHERE user_id = ?",
 		                  progress + 1, user_id)
@@ -690,11 +690,11 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 			// https://stackoverflow.com/a/35228972
 			//
 			// The default value for delete_at should be (current epoch) + 3600 (1h),
-			// as I said. answer_handler should add 3600 to the game's delete_at field
+			// as I said. answerHandler should add 3600 to the game's delete_at field
 			// every time a player gets an answer correct. This would be done after
 			// checking to make sure the game isn't over yet (i.e. one of the players
 			// is at a score of > 9) so that the game wouldn't be able to run forever.
-			// answer_handler would set the time to (current epoch) + 60 (1m) when a
+			// answerHandler would set the time to (current epoch) + 60 (1m) when a
 			// player gets > 9 score (in this if statement).
 
 			// Delete the current game in seven seconds
@@ -737,15 +737,15 @@ func answer_handler(writer http.ResponseWriter, request *http.Request, db *sql.D
 }
 
 // Create game form submission URL endpoint
-func create_post_handler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+func createPostHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 
 	if request.Method != http.MethodPost {
 		return
 	}
 
-	username := get_cookie(request, "username")
+	username := getCookie(request, "username")
 	if username == "" {
-		set_cookie(writer, "message", "Error: You must be logged in to create a game.")
+		setCookie(writer, "message", "Error: You must be logged in to create a game.")
 		redirect(writer, request, "/")
 	}
 
@@ -755,20 +755,20 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	// Ensure standard-looking game names
 	valid := regexp.MustCompile("^[a-zA-Z0-9 _-]+$")
 	if !valid.MatchString(name) {
-		set_cookie(writer, "message", "Error: Your game's name must match '^[a-zA-Z0-9 _-]+$'.")
+		setCookie(writer, "message", "Error: Your game's name must match '^[a-zA-Z0-9 _-]+$'.")
 		redirect(writer, request, "/create/")
 		return
 	}
 
 	if len(name) > 15 {
-		set_cookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin.")
+		setCookie(writer, "message", "Error: Don't try to circumvent client-side validation, you goblin.")
 		redirect(writer, request, "/create/")
 	}
 
-	existing_name := in_game(username, db)
-	if existing_name != "" {
-		message := fmt.Sprintf("Error: You're already in a game ('%v').", existing_name)
-		set_cookie(writer, "message", message)
+	existingName := inGame(username, db)
+	if existingName != "" {
+		message := fmt.Sprintf("Error: You're already in a game ('%v').", existingName)
+		setCookie(writer, "message", message)
 
 		redirect(writer, request, "/create/")
 		return
@@ -779,7 +779,7 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 	                       name, password, delete_at)
 
 	if err != nil {
-		set_cookie(writer, "message", "Error: Game already exists.")
+		setCookie(writer, "message", "Error: Game already exists.")
 		redirect(writer, request, "/create/")
 		return
 	}
@@ -800,26 +800,26 @@ func create_post_handler(writer http.ResponseWriter, request *http.Request, db *
 		hdl(err)
 	}
 
-	add_player(name, username, db)
+	addPlayer(name, username, db)
 
 	redirect(writer, request, fmt.Sprintf("/play/%v/", name))
 }
 
 // Log out
-func logout_handler(writer http.ResponseWriter, request *http.Request) {
+func logoutHandler(writer http.ResponseWriter, request *http.Request) {
 
-	if get_cookie(request, "username") == "" {
-		set_cookie(writer, "message", "You're already logged out.")
+	if getCookie(request, "username") == "" {
+		setCookie(writer, "message", "You're already logged out.")
 	} else {
-		set_cookie(writer, "username", "")
-		set_cookie(writer, "message", "You have successfully logged out.")
+		setCookie(writer, "username", "")
+		setCookie(writer, "message", "You have successfully logged out.")
 	}
 
 	redirect(writer, request, "/")
 }
 
 // Delete games scheduled for deletion (either finished or AFK timeout)
-func game_delete_timer(db *sql.DB) {
+func gameDeleteTimer(db *sql.DB) {
 	for range time.Tick(time.Second * 10) {
 
 		current := time.Now().Unix()
@@ -854,43 +854,43 @@ func main() {
 	server := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", server))
 
-	http.HandleFunc("/", home_handler)
-	http.HandleFunc("/login/", login_get_handler)
+	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/login/", loginGetHandler)
 	http.HandleFunc("/login_post/", func(writer http.ResponseWriter, request *http.Request) {
-		login_post_handler(writer, request, db)
+		loginPostHandler(writer, request, db)
 	})
-	http.HandleFunc("/register/", register_get_handler)
+	http.HandleFunc("/register/", registerGetHandler)
 	http.HandleFunc("/register_post/", func(writer http.ResponseWriter, request *http.Request) {
-		register_post_handler(writer, request, db)
+		registerPostHandler(writer, request, db)
 	})
 	http.HandleFunc("/profile/", func(writer http.ResponseWriter, request *http.Request) {
-		profile_handler(writer, request, db)
+		profileHandler(writer, request, db)
 	})
 	http.HandleFunc("/lobby/", func(writer http.ResponseWriter, request *http.Request) {
-		lobby_handler(writer, request, db)
+		lobbyHandler(writer, request, db)
 	})
 	http.HandleFunc("/join/", func(writer http.ResponseWriter, request *http.Request) {
-		join_handler(writer, request, db)
+		joinHandler(writer, request, db)
 	})
 	http.HandleFunc("/play/", func(writer http.ResponseWriter, request *http.Request) {
-		play_handler(writer, request, db)
+		playHandler(writer, request, db)
 	})
 	http.HandleFunc("/init_question/", func(writer http.ResponseWriter, request *http.Request) {
-		init_question_handler(writer, request, db)
+		initQuestionHandler(writer, request, db)
 	})
 	http.HandleFunc("/progress/", func(writer http.ResponseWriter, request *http.Request) {
-		progress_handler(writer, request, db)
+		progressHandler(writer, request, db)
 	})
 	http.HandleFunc("/answer/", func(writer http.ResponseWriter, request *http.Request) {
-		answer_handler(writer, request, db)
+		answerHandler(writer, request, db)
 	})
-	http.HandleFunc("/create/", create_get_handler)
+	http.HandleFunc("/create/", createGetHandler)
 	http.HandleFunc("/create_post/", func(writer http.ResponseWriter, request *http.Request) {
-		create_post_handler(writer, request, db)
+		createPostHandler(writer, request, db)
 	})
-	http.HandleFunc("/logout/", logout_handler)
+	http.HandleFunc("/logout/", logoutHandler)
 
-	go game_delete_timer(db)
+	go gameDeleteTimer(db)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
