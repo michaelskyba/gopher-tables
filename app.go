@@ -16,7 +16,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
-	"os"
 )
 
 var templates = template.Must(template.ParseFiles(
